@@ -5,6 +5,8 @@ channels:
   - defaults
   #- pytorch
 dependencies:
+  - cudatoolkit
+  - cudnn
   - opencv
   - numpy
   - matplotlib
