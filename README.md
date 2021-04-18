@@ -14,14 +14,14 @@ If using pycharm, set the interpreter to the python version in the created conda
 When adding or removing a dependency from the environment.yml list, run:  
 $ conda env update --file environment.yml
 
-To run Tensorboard enter:
+To run Tensorboard enter:  
 $ tensorboard --logdir=/path/to/output/logs/folder/  
 or  
 $ tensorboard --logdir logs
 
 ### Used Sources/Dependencies
 #### Python Engineer
-https://www.youtube.com/watch?v=pDdP0TFzsoQ    
+https://www.youtube.com/watch?v=pDdP0TFzsoQ
 
 ### System Dependencies:
 TBD
