@@ -1,4 +1,4 @@
-name: cifar_env
+name: ml_env
 channels:
   #- anaconda
   - conda-forge
