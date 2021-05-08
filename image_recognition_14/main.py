@@ -39,7 +39,7 @@ def main():
 
     # Hyper parameters
     num_epochs = 100  # Number of times training set is used
-    batch_size = 25  # Number of parts training set is divided into
+    batch_size = 50  # Number of parts training set is divided into
     learning_rate = 0.01  # Speed at which model learns
 
     # Dataset has PILImage images of ranged [0, 1].

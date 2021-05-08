@@ -1,10 +1,14 @@
 # Directories
 .idea/
 __pycache__/
+
 data/
 runs/
 
-image_recognition/data/
-image_recognition/runs/
+digit_recognition_13/data/
+digit_recognition_13/runs/
+
+image_recognition_14/data/
+image_recognition_14/runs/
 
 # Files
