@@ -4,4 +4,7 @@ __pycache__/
 data/
 runs/
 
+image_recognition/data/
+image_recognition/runs/
+
 # Files
