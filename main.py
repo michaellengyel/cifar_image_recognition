@@ -31,17 +31,16 @@ class ConvNet(nn.Module):
 
 def main():
 
-    print("Test output.")
-
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(device)
 
     writer = SummaryWriter()
 
     # Hyper parameters
-    num_epochs = 4  # Number of times training set is used
-    batch_size = 4  # Number of parts training set is divided into
-    learning_rate = 0.001  # Speed at which model learns
+    num_epochs = 100  # Number of times training set is used
+    batch_size = 25  # Number of parts training set is divided into
+    learning_rate = 0.01  # Speed at which model learns
 
     # Dataset has PILImage images of ranged [0, 1].
     # We transform them to Tensors of normalized ranged [-1, 1]
@@ -82,7 +81,7 @@ def main():
             loss.backward()
             optimizer.step()
 
-            if (i+1) % 2000 == 0:
+            if (i+1) % 100 == 0:
                 print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{n_total_steps}], Loss: {loss.item():.4f}')
                 writer.add_scalar('Loss', loss.item(), writer_itr)
 
