@@ -1,23 +1,48 @@
 import torch
 import torch.nn as nn
 import torchvision
+from torchvision.transforms import transforms
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import math
 
 
 class WineDataset(Dataset):
-    def __init__(self):
-        xy = np.loadtxt('./data/wine.csv', delimiter=',', dtype=np.float32, skiprows=1)
-        self.x = torch.from_numpy(xy[:, 1:])
-        self.y = torch.from_numpy(xy[:, [0]])
-        self.n_samples = xy.shape[0]
+    def __init__(self, transform=None):
+        feature_label = np.loadtxt('./data/wine.csv', delimiter=',', dtype=np.float32, skiprows=1)
+        self.feature = feature_label[:, 1:]
+        self.label = feature_label[:, [0]]
+        self.n_samples = feature_label.shape[0]
+
+        self.transform = transform
 
     def __getitem__(self, index):
-        return self.x[index], self.y[index]
+        sample = self.feature[index], self.label[index]
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
 
     def __len__(self):
         return self.n_samples
+
+
+class ToTensorTransform:
+    def __call__(self, sample):
+        feature, label = sample
+        return torch.from_numpy(feature), torch.from_numpy(label)
+
+
+class MultiplicationTransform:
+    def __init__(self, factor):
+        self.factor = factor
+
+    def __call__(self, sample):
+        feature, label = sample
+        feature = feature * self.factor
+        label = label * self.factor
+        return feature, label
 
 
 class LogisticRegression(nn.Module):
@@ -41,8 +66,11 @@ def main():
     batch_size = 4
     learning_rate = 0.1
 
+    # Creating composed transform from multiple user transforms
+    composed = torchvision.transforms.Compose([ToTensorTransform(), MultiplicationTransform(3)])
+
     # Load data
-    dataset = WineDataset()
+    dataset = WineDataset(transform=composed)
     data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
     total_samples = len(dataset)
