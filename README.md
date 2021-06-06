@@ -25,7 +25,12 @@ $ tensorboard --logdir runs
 
 ### Used Sources/Dependencies
 #### Python Engineer
-https://www.youtube.com/watch?v=pDdP0TFzsoQ
+dataset_dataloader_09: https://www.youtube.com/watch?v=PXOzkkB5eH0   
+digit_recognition_13: https://www.youtube.com/watch?v=oPhxf2fXHkQ   
+image_recognition_14: https://www.youtube.com/watch?v=pDdP0TFzsoQ   
+save_load_17: https://www.youtube.com/watch?v=9L9jEOwRrCg   
+rnn_lstm_18: https://www.youtube.com/watch?v=0_PgWWmauHk   
+
 
 ### System Dependencies:
 TBD
