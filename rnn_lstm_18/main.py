@@ -5,17 +5,25 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 
 
-class NeuralNet(nn.Module):
-    def __init__(self, input_size, hidden_size, num_classes):
-        super(NeuralNet, self).__init__()
-        self.l1 = nn.Linear(input_size, hidden_size)
-        self.relu = nn.ReLU()
-        self.l2 = nn.Linear(hidden_size, num_classes)
+class RNN(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes, device):
+        super(RNN, self).__init__()
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.device = device
+        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        # x -> (batch_size, seq, input_size)
+        self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
-        out = self.l1(x)
-        out = self.relu(out)
-        out = self.l2(out)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(self.device)
+
+        out, _ = self.rnn(x, h0)
+        # out: batch_size, seq_length, hidden_size
+        # out (N, 28, 128)
+        out = out[:, -1, :]
+        # out (N, 128)
+        out = self.fc(out)
         return out
 
 
@@ -25,8 +33,11 @@ def main():
     print(device)
 
     # Hyper parameters
-    input_size = 784  # 28x28
-    hidden_size = 100
+    # input_size = 784  # 28x28
+    input_size = 28
+    sequence_size = 28
+    num_layers = 2
+    hidden_size = 128
     num_classes = 10
     batch_size = 100
     learning_rate = 0.001
@@ -55,7 +66,7 @@ def main():
         plt.imshow(samples[i][0], cmap='gray')
     plt.show()
 
-    model = NeuralNet(input_size, hidden_size, num_classes).to(device)
+    model = RNN(input_size, hidden_size, num_layers, num_classes, device).to(device)
 
     # TRAINING
 
@@ -68,7 +79,7 @@ def main():
     for epoch in range(num_epochs):
         for i, (images, labels) in enumerate(train_loader):
             # Reshape the [100, 1, 28, 28] to [100, 784]
-            images = images.reshape(-1, 28 * 28).to(device)
+            images = images.reshape(-1, sequence_size, input_size).to(device)
             labels = labels.to(device)
 
             # Forward
@@ -82,7 +93,7 @@ def main():
 
             # Print the the loss
             if (i + 1) % 100 == 0:
-                print(f"epoch {epoch+1} / {num_epochs}, step {i + 1}/{n_total_steps}, loss = {loss.item():.4}")
+                print(f"epoch {epoch + 1} / {num_epochs}, step {i + 1}/{n_total_steps}, loss = {loss.item():.4}")
 
     # TESTING
     with torch.no_grad():  # Disable gradiant calculation
@@ -90,7 +101,7 @@ def main():
         n_correct = 0
         for images, labels in test_loader:
             # Reshape the [100, 1, 28, 28] to [100, 784]
-            images = images.reshape(-1, 28 * 28).to(device)
+            images = images.reshape(-1, sequence_size, input_size).to(device)
             labels = labels.to(device)
             outputs = model(images)
 
