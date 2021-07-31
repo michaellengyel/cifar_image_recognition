@@ -25,6 +25,8 @@ $ tensorboard --logdir runs
 
 ### Used Sources/Dependencies
 #### Python Engineer
+linear_regression_07: https://www.youtube.com/watch?v=YAJ5XBwlN4o   
+logistic_regression_08: https://www.youtube.com/watch?v=OGpQxIkR4ao  
 dataset_dataloader_09: https://www.youtube.com/watch?v=PXOzkkB5eH0   
 digit_recognition_13: https://www.youtube.com/watch?v=oPhxf2fXHkQ   
 image_recognition_14: https://www.youtube.com/watch?v=pDdP0TFzsoQ   
