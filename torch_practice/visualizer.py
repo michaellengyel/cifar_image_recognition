@@ -23,7 +23,7 @@ class MouseDataset(Dataset):
     def __getitem__(self, item):
         size = self.df.iloc[[item]].count(axis=1)
         features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size - 2], self.df.iloc[item, size - 1]]], dtype=torch.float32)
-        labels = np.array([self.df.iloc[item].fillna(0)], dtype=np.float)
+        labels = np.array([self.df.iloc[item].fillna(0)])
 
         for i in range(len(labels[0])):
             if labels[0][i] == 0 and i % 2 == 1:
@@ -31,7 +31,7 @@ class MouseDataset(Dataset):
             elif labels[0][i] == 0 and i % 2 == 0:
                 labels[0][i] = self.df.iloc[item, size - 2]
 
-        labels = torch.from_numpy(labels)
+        labels = torch.from_numpy(labels).float()
         return features, labels
 
 
@@ -49,6 +49,7 @@ def split_to_dims_all(data):
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print("Device: ", device)
 
     dataset = MouseDataset("./data.txt", transform=None)
 

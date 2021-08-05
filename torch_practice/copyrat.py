@@ -79,8 +79,10 @@ class MouseDataset(Dataset):
     def __getitem__(self, item):
         size = self.df.iloc[[item]].count(axis=1)
         features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size - 2], self.df.iloc[item, size - 1]]], dtype=torch.float32)
-        labels = np.array([self.df.iloc[item].fillna(0)], dtype=np.float)
+        labels = np.array([self.df.iloc[item].fillna(0)])
 
+        # Replace all Nan. values with the target coordinates
+        # TODO: Move to preprocess, very expensive
         for i in range(len(labels[0])):
             if labels[0][i] == 0 and i % 2 == 1:
                 labels[0][i] = self.df.iloc[item, size - 1]
@@ -106,13 +108,14 @@ def split_to_dims_all(data):
 def main():
 
     input_size = 4
-    hidden_size = 50
+    hidden_size = 80
     output_size = 100
-    learning_rate = 0.001
-    batch_size = 16
-    num_epochs = 50
+    learning_rate = 0.0005
+    batch_size = 32
+    num_epochs = 100
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print("Device: ", device)
 
     dataset = MouseDataset("./data.txt", transform=None)
 
@@ -123,8 +126,8 @@ def main():
     model.to(device)
 
     # LOSS AND OPTIMIZER
-    #criterion = nn.L1Loss()
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
+    #criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     avg_losses = []
@@ -176,10 +179,11 @@ def main():
             y2 = random.randint(0, 500)
 
             features = torch.tensor([[x1, y1, x2, y2]], dtype=torch.float32)
+            features = features.to(device=device)
             labels = model(features)
 
-            features_np = features.detach().numpy()
-            labels_np = labels.detach().numpy()
+            features_np = features.cpu().numpy()
+            labels_np = labels.cpu().numpy()
 
             features_np_x, features_np_y = split_to_dims_all(features_np)
             labels_np_x, labels_np_y = split_to_dims_all(labels_np)
