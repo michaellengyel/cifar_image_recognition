@@ -81,6 +81,7 @@ class MouseDataset(Dataset):
         features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size - 2], self.df.iloc[item, size - 1]]], dtype=torch.float32)
         labels = np.array([self.df.iloc[item].fillna(0)])
 
+        """
         # Replace all Nan. values with the target coordinates
         # TODO: Move to preprocess, very expensive
         for i in range(len(labels[0])):
@@ -88,6 +89,7 @@ class MouseDataset(Dataset):
                 labels[0][i] = self.df.iloc[item, size - 1]
             elif labels[0][i] == 0 and i % 2 == 0:
                 labels[0][i] = self.df.iloc[item, size - 2]
+        """
 
         labels = torch.from_numpy(labels).float()
         return features, labels
@@ -117,7 +119,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device: ", device)
 
-    dataset = MouseDataset("./data.txt", transform=None)
+    dataset = MouseDataset("./filtered_data.txt", transform=None)
 
     train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
 
