@@ -14,26 +14,35 @@ from torch.utils.data import DataLoader
 
 class MouseDataset(Dataset):
     def __init__(self, file_name, transform=None):
-        self.df = pd.read_csv(file_name, delimiter=';', header=None, names=list(range(100)), dtype=np.float32)
+        self.df = pd.read_csv(file_name, delimiter=';', header=None,  index_col=False, names=list(range(100)), dtype=np.float32)
         self.transform = transform
 
     def __len__(self):
         return len(self.df)
+
+
+    """
+    def __getitem__(self, item):
+        size = self.df.iloc[[item]].count(axis=1)
+        features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size-2], self.df.iloc[item, size-1]]], dtype=torch.float32)
+        labels = torch.tensor([self.df.iloc[item].fillna(0)], dtype=torch.float32)
+        return features, labels
+    """
 
     def __getitem__(self, item):
         size = self.df.iloc[[item]].count(axis=1)
         features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size - 2], self.df.iloc[item, size - 1]]], dtype=torch.float32)
         labels = np.array([self.df.iloc[item].fillna(0)])
 
-        '''
-        Replace all Nan. values with the target coordinates
-        TODO: Move to preprocess, very expensive
+        """
+        # Replace all Nan. values with the target coordinates
+        # TODO: Move to preprocess, very expensive
         for i in range(len(labels[0])):
             if labels[0][i] == 0 and i % 2 == 1:
                 labels[0][i] = self.df.iloc[item, size - 1]
             elif labels[0][i] == 0 and i % 2 == 0:
                 labels[0][i] = self.df.iloc[item, size - 2]
-        '''
+        """
 
         labels = torch.from_numpy(labels).float()
         return features, labels

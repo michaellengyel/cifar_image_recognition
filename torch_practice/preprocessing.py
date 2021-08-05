@@ -23,8 +23,11 @@ def split_to_dims_all(data):
 
 def main():
 
+    src_file = "./data.txt"
+    dest_file = "filtered_data.txt"
+
     # Read in data
-    df = pd.read_csv("./data.txt", delimiter=';', header=None, names=list(range(100)))
+    df = pd.read_csv(src_file, delimiter=';', header=None, index_col=False, names=list(range(100)))
     df.fillna(0, inplace=True)
     data = df.to_numpy()
 
@@ -50,7 +53,7 @@ def main():
     # data = data / 500
 
     df = pd.DataFrame(data)
-    df.to_csv("filtered_data.txt", index=False, header=False, sep=';')
+    df.to_csv(dest_file, index=False, header=False, sep=';')
     print(df)
 
     # Visualization
@@ -59,6 +62,10 @@ def main():
         features_np_x, features_np_y = split_to_dims_all(data[[n]])
         print(n)
         print(data[[n]])
+        print(features_np_x)
+        print(len(features_np_x))
+        print(features_np_y)
+        print(len(features_np_y))
 
         plt.plot(features_np_x, features_np_y, '-or')
         plt.plot()

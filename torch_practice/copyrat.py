@@ -61,7 +61,7 @@ class RatNet(nn.Module):
 
 class MouseDataset(Dataset):
     def __init__(self, file_name, transform=None):
-        self.df = pd.read_csv(file_name, delimiter=';', header=None, names=list(range(100)), dtype=np.float32)
+        self.df = pd.read_csv(file_name, delimiter=';', header=None,  index_col=False, names=list(range(100)), dtype=np.float32)
         self.transform = transform
 
     def __len__(self):
@@ -114,7 +114,7 @@ def main():
     output_size = 100
     learning_rate = 0.0005
     batch_size = 32
-    num_epochs = 100
+    num_epochs = 30
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device: ", device)
