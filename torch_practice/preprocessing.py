@@ -54,7 +54,7 @@ def main():
 
     df = pd.DataFrame(data)
     df.to_csv(dest_file, index=False, header=False, sep=';')
-    print(df)
+    print("Length of data: ", len(df))
 
     # Visualization
     for n in range(300):
