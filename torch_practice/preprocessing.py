@@ -23,8 +23,8 @@ def split_to_dims_all(data):
 
 def main():
 
-    src_file = "./data.txt"
-    dest_file = "filtered_data.txt"
+    src_file = "data/data.txt"
+    dest_file = "data/filtered_data.txt"
 
     # Read in data
     df = pd.read_csv(src_file, delimiter=';', header=None, index_col=False, names=list(range(100)))

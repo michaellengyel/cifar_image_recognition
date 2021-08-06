@@ -20,29 +20,10 @@ class MouseDataset(Dataset):
     def __len__(self):
         return len(self.df)
 
-
-    """
-    def __getitem__(self, item):
-        size = self.df.iloc[[item]].count(axis=1)
-        features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size-2], self.df.iloc[item, size-1]]], dtype=torch.float32)
-        labels = torch.tensor([self.df.iloc[item].fillna(0)], dtype=torch.float32)
-        return features, labels
-    """
-
     def __getitem__(self, item):
         size = self.df.iloc[[item]].count(axis=1)
         features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size - 2], self.df.iloc[item, size - 1]]], dtype=torch.float32)
         labels = np.array([self.df.iloc[item].fillna(0)])
-
-        """
-        # Replace all Nan. values with the target coordinates
-        # TODO: Move to preprocess, very expensive
-        for i in range(len(labels[0])):
-            if labels[0][i] == 0 and i % 2 == 1:
-                labels[0][i] = self.df.iloc[item, size - 1]
-            elif labels[0][i] == 0 and i % 2 == 0:
-                labels[0][i] = self.df.iloc[item, size - 2]
-        """
 
         labels = torch.from_numpy(labels).float()
         return features, labels
@@ -61,13 +42,17 @@ def split_to_dims_all(data):
 
 
 def main():
+
+    filtered_data_path = "data/filtered_data.txt"
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device: ", device)
 
-    dataset = MouseDataset("./filtered_data.txt", transform=None)
+    dataset = MouseDataset(filtered_data_path, transform=None)
 
     # VISUALIZATION CODE
-    for n in range(300):
+    for n in range(dataset.__len__()):
+
         i = random.randint(0, dataset.__len__())
 
         features, labels = dataset.__getitem__(i)

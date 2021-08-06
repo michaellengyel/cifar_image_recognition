@@ -112,14 +112,17 @@ def main():
     input_size = 4
     hidden_size = 80
     output_size = 100
-    learning_rate = 0.0005
+    learning_rate = 0.0001
     batch_size = 32
-    num_epochs = 30
+    num_epochs = 300
+
+    filtered_data_path = "data/filtered_data.txt"
+    save_model_path = "./models/model.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device: ", device)
 
-    dataset = MouseDataset("./filtered_data.txt", transform=None)
+    dataset = MouseDataset(filtered_data_path, transform=None)
 
     train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
 
@@ -128,8 +131,8 @@ def main():
     model.to(device)
 
     # LOSS AND OPTIMIZER
-    criterion = nn.L1Loss()
-    #criterion = nn.MSELoss()
+    # criterion = nn.L1Loss()
+    criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     avg_losses = []
@@ -143,11 +146,11 @@ def main():
             # Send data to cuda if possible
             data = data.to(device=device)
             targets = targets.to(device=device)
-            #print("Beep", batch_idx)
 
             # FORWARD PASS
             scores = model(data)
 
+            # Reshape data
             targets = targets[-1, :, :].flatten()
             scores = scores[-1, :, :].flatten()
 
@@ -165,70 +168,13 @@ def main():
         print(f'Cost at epoch {epoch} is {sum(losses)/len(losses)}')
         avg_losses.append(sum(losses)/len(losses))
 
+    print("Finished training...")
+    print("Saving model..")
 
-    print('Finish Training')
+    torch.save(model.state_dict(), save_model_path)
 
-    with torch.no_grad():
-
-        plt.plot(avg_losses)
-        plt.show()
-
-        for i in range(100):
-
-            x1 = random.randint(0, 500)
-            y1 = random.randint(0, 500)
-            x2 = random.randint(0, 500)
-            y2 = random.randint(0, 500)
-
-            features = torch.tensor([[x1, y1, x2, y2]], dtype=torch.float32)
-            features = features.to(device=device)
-            labels = model(features)
-
-            features_np = features.cpu().numpy()
-            labels_np = labels.cpu().numpy()
-
-            features_np_x, features_np_y = split_to_dims_all(features_np)
-            labels_np_x, labels_np_y = split_to_dims_all(labels_np)
-
-            plt.plot(labels_np_x, labels_np_y, '-ok')
-            plt.plot(features_np_x, features_np_y, 'or')
-            plt.plot()
-            plt.xlim([0, 500])
-            plt.ylim([0, 500])
-            plt.show()
-
-    """
-    # VISUALIZATION CODE
-    for i in range(300):
-        features, labels = data.__getitem__(i)
-        print(features)
-        print(labels)
-
-        features_np = features.detach().numpy()
-        labels_np = labels.detach().numpy()
-
-        features_np_x, features_np_y = split_to_dims_all(features_np)
-        labels_np_x, labels_np_y = split_to_dims_all(labels_np)
-
-        plt.plot(labels_np_x, labels_np_y, '-ok')
-        plt.plot(features_np_x, features_np_y, 'or')
-        plt.plot()
-        plt.xlim([0, 500])
-        plt.ylim([0, 500])
-    """
-
-    """
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    dataset = MouseDataset(file_name="./data/data.txt", transform=None)
-
-    train_loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
-
-    for batch_idx, (data, targets) in enumerate(train_loader):
-        data = data.to(device=device)
-        targets = targets.to(device=device)
-        print("Beep", batch_idx)
-    """
+    plt.plot(avg_losses)
+    plt.show()
 
 
 if __name__ == '__main__':
