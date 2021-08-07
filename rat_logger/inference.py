@@ -78,7 +78,7 @@ def main():
     model = RatNet(input_size, hidden_size, output_size)
     model.to(device)
 
-    model.load_state_dict(torch.load(load_model_path))
+    model.load_state_dict(torch.load(load_model_path, map_location=torch.device(device)))
     model.eval()
 
     with torch.no_grad():
