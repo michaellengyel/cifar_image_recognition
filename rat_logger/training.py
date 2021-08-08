@@ -11,34 +11,8 @@ import pandas as pd
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
-
-class NeuralNet(nn.Module):
-    def __init__(self, input_size, hidden_size, num_classes):
-        super(NeuralNet, self).__init__()
-        #self.l1 = nn.Linear(in_features=input_size, out_features=hidden_size)
-        #self.relu = nn.ReLU()
-        #self.l2 = nn.Linear(in_features=hidden_size, out_features=num_classes)
-        self.conv1 = nn.Conv2d(1, 3, kernel_size=3, stride=1)
-        self.relu = nn.ReLU()
-        self.max = nn.MaxPool2d(kernel_size=3, stride=1)
-        self.fc = nn.Linear(1728, 1000)
-        self.relu2 = nn.ReLU()
-        self.fc2 = nn.Linear(1000, num_classes)
-
-
-    def forward(self, x):
-        #out = self.l1(x)
-        #out = self.relu(out)
-        #out = self.l2(out)
-        #return out
-        out = self.conv1(x)
-        out = self.relu(out)
-        out = self.max(out)
-        out = out.reshape(out.size(0), -1)
-        out = self.fc(out)
-        out = self.relu2(out)
-        out = self.fc2(out)
-        return out
+from torch.utils.tensorboard import SummaryWriter
+import time
 
 
 class RatNet(nn.Module):
@@ -67,30 +41,10 @@ class MouseDataset(Dataset):
     def __len__(self):
         return len(self.df)
 
-
-    """
-    def __getitem__(self, item):
-        size = self.df.iloc[[item]].count(axis=1)
-        features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size-2], self.df.iloc[item, size-1]]], dtype=torch.float32)
-        labels = torch.tensor([self.df.iloc[item].fillna(0)], dtype=torch.float32)
-        return features, labels
-    """
-
     def __getitem__(self, item):
         size = self.df.iloc[[item]].count(axis=1)
         features = torch.tensor([[self.df.iloc[item, 0], self.df.iloc[item, 1], self.df.iloc[item, size - 2], self.df.iloc[item, size - 1]]], dtype=torch.float32)
         labels = np.array([self.df.iloc[item].fillna(0)])
-
-        """
-        # Replace all Nan. values with the target coordinates
-        # TODO: Move to preprocess, very expensive
-        for i in range(len(labels[0])):
-            if labels[0][i] == 0 and i % 2 == 1:
-                labels[0][i] = self.df.iloc[item, size - 1]
-            elif labels[0][i] == 0 and i % 2 == 0:
-                labels[0][i] = self.df.iloc[item, size - 2]
-        """
-
         labels = torch.from_numpy(labels).float()
         return features, labels
 
@@ -117,7 +71,10 @@ def main():
     num_epochs = 300
 
     filtered_data_path = "data/filtered_data.txt"
-    save_model_path = "./models/model.pth"
+
+    model_name = "basic_rat-{}".format(int(time.time()))
+    save_model_path = "./models/" + model_name + ".pth"
+    writer = SummaryWriter(log_dir='runs/{}'.format(model_name))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device: ", device)
@@ -167,10 +124,15 @@ def main():
 
         print(f'Cost at epoch {epoch} is {sum(losses)/len(losses)}')
         avg_losses.append(sum(losses)/len(losses))
+        writer.add_scalar("Avg Loss/Batch", sum(losses)/len(losses), epoch)
 
-    print("Finished training...")
+    print("Finishing training...")
+
+    print("Flushing SummaryWriter...")
+    writer.flush()
+    print("Closing SummaryWriter...")
+    writer.close()
     print("Saving model..")
-
     torch.save(model.state_dict(), save_model_path)
 
     plt.plot(avg_losses)
