@@ -14,6 +14,9 @@ digit_recognition_13/runs/
 image_recognition_14/data/
 image_recognition_14/runs/
 
+transfer_learning_15/data
+transfer_learning_15/runs
+
 rnn_lstm_18/data/
 rnn_lstm_18/runs/
 
