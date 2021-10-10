@@ -31,7 +31,7 @@ def main():
             transforms.ToTensor(),
             transforms.Normalize(mean, std)
         ]),
-        'val' : transforms.Compose([
+        'val': transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
@@ -41,13 +41,13 @@ def main():
 
     data_dir = 'data/hymenoptera_data'
     sets = ['train', 'val']
-    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x]) for x in ['train', 'val']}
-    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4, shuffle=True, num_workers=0) for x in ['train', 'val']}
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x]) for x in sets}
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=8, shuffle=True, num_workers=0) for x in sets}
+    dataset_sizes = {x: len(image_datasets[x]) for x in sets}
     class_names = image_datasets['train'].classes
     print(class_names)
 
-    def train_model(model, criterion, optimizer, scheduler, num_epochs):
+    def train_model(model, criterion, optimizer, scheduler, num_epochs, visualization):
         since = time.time()
 
         best_model_wts = copy.deepcopy(model.state_dict())
@@ -58,7 +58,7 @@ def main():
             print('-' * 10)
 
             # Each epoch has a training and validation phase
-            for phase in ['train', 'val']:
+            for phase in sets:
                 if phase == 'train':
                     model.train()  # Set model to training mode
                 else:
@@ -71,6 +71,16 @@ def main():
                 for inputs, labels in dataloaders[phase]:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
+
+                    if visualization:
+                        print(inputs[0, 0, :, 0].size())
+                        image = torch.randn(224, 0)
+                        for images_in_batch in inputs[:]:
+                            image = torch.cat((image, images_in_batch[0, :, :]), axis=1)
+
+                        print(labels)
+                        plt.imshow(image)
+                        plt.show()
 
                     # forward
                     # track history if only training phase
@@ -113,13 +123,16 @@ def main():
 
     model = models.resnet18(pretrained=True)
 
-    # Freezing all pretrained layers in the RESnet
+    number_of_params = 0
+    # Freezing all pre-trained layers in the ResNet18
     for param in model.parameters():
+        number_of_params += 1
         param.requires_grad = False
 
-    num_ftrs = model.fc.in_features
+    num_of_features = model.fc.in_features
+    print(num_of_features)
 
-    model.fc = nn.Linear(num_ftrs, 2)
+    model.fc = nn.Linear(num_of_features, 2)
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
@@ -128,7 +141,7 @@ def main():
     # Scheduler
     step_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    model = train_model(model, criterion, optimizer, step_lr_scheduler, num_epochs=5)
+    model = train_model(model, criterion, optimizer, step_lr_scheduler, num_epochs=5, visualization=False)
 
 
 if __name__ == "__main__":
