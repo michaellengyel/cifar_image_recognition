@@ -10,13 +10,15 @@ dependencies:
   - opencv
   - numpy
   - matplotlib
-  - torchvision==0.8.2
   - pandas>=1.0.0
   - scipy
   - scikit-learn
   - tqdm
   - h5py==2.10.0
   - tensorboard
+  - visdom==0.1.8.9
+  - PyYAML
+  - quaternion
   - pip
   - pip:
     - torch==1.7.1+cu101
