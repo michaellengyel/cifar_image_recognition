@@ -69,18 +69,19 @@ def main():
 
                 # Iterate over data
                 for inputs, labels in dataloaders[phase]:
-                    inputs = inputs.to(device)
-                    labels = labels.to(device)
 
                     if visualization:
-                        print(inputs[0, 0, :, 0].size())
-                        image = torch.randn(224, 0)
+                        size_of_image = list(inputs.size())[-1]
+                        image = torch.randn(size_of_image, 0)
                         for images_in_batch in inputs[:]:
                             image = torch.cat((image, images_in_batch[0, :, :]), axis=1)
 
                         print(labels)
                         plt.imshow(image)
                         plt.show()
+
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
 
                     # forward
                     # track history if only training phase
@@ -141,7 +142,7 @@ def main():
     # Scheduler
     step_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    model = train_model(model, criterion, optimizer, step_lr_scheduler, num_epochs=5, visualization=False)
+    model = train_model(model, criterion, optimizer, step_lr_scheduler, num_epochs=5, visualization=True)
 
 
 if __name__ == "__main__":
