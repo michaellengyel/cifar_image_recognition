@@ -71,13 +71,12 @@ def main():
                 for inputs, labels in dataloaders[phase]:
 
                     if visualization:
-                        size_of_image = list(inputs.size())[-1]
-                        image = torch.randn(size_of_image, 0)
-                        for images_in_batch in inputs[:]:
-                            image = torch.cat((image, images_in_batch[0, :, :]), axis=1)
+
+                        out = torchvision.utils.make_grid(inputs)
+                        out = out.permute(1, 2, 0).numpy()
 
                         print(labels)
-                        plt.imshow(image)
+                        plt.imshow(out)
                         plt.show()
 
                     inputs = inputs.to(device)
