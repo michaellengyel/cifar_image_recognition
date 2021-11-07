@@ -136,9 +136,11 @@ def main():
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
+
+    # Observe that all parameters are being optimized
     optimizer = optim.SGD(model.parameters(), lr=0.001)
 
-    # Scheduler
+    # Decay LR by a factor of 0.1 every 7 epochs
     step_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     model = train_model(model, criterion, optimizer, step_lr_scheduler, num_epochs=5, visualization=True)
