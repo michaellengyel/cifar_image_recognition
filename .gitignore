@@ -20,4 +20,7 @@ transfer_learning_15/runs
 rnn_lstm_18/data/
 rnn_lstm_18/runs/
 
+yolo_v1/data/
+yolo_v1/runs/
+
 # Files
