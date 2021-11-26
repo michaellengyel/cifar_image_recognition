@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-#from utils import intersection_over_union
+from utils import intersection_over_union
+
 
 class YoloLoss(nn.Module):
     def __init__(self, S=7, B=2, C=20):  # Number of sections, number of boxes per section, number of classes
@@ -46,11 +47,11 @@ class YoloLoss(nn.Module):
         # FOR NO OBJECT LOSS
 
         # (N, S, S, 1) -> (N, S*S)
-        no_object_loss = self.mse(torch.flatten((1 - exists_box) * predictions[..., 25:26], start_dim=1),
-                                  torch.flatten(1 - exists_box) * target[..., 20:21], start_dim=1)
+        no_object_loss = self.mse(torch.flatten((1 - exists_box) * predictions[..., 20:21], start_dim=1),
+                                  torch.flatten((1 - exists_box) * target[..., 20:21], start_dim=1))
 
         no_object_loss += self.mse(torch.flatten((1 - exists_box) * predictions[..., 25:26], start_dim=1),
-                                   torch.flatten(1 - exists_box) * target[..., 20:21], start_dim=1)
+                                   torch.flatten((1 - exists_box) * target[..., 20:21], start_dim=1))
 
         # FOR CLASS LOSS
 

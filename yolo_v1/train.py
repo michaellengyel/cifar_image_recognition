@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 from model import Yolov1
 from dataset import VOCDataset
 
+import matplotlib.pyplot as plt
+
 from utils import(
     intersection_over_union,
     non_max_suppression,
@@ -27,9 +29,9 @@ torch.manual_seed(seed)
 # Hyperparameters
 LEARNING_RATE = 2e-5
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 WEIGHT_DECAY = 0.0
-EPOCHS = 100
+EPOCHS = 10
 NUM_WORKERS = 2
 PIN_MEMORY = True
 LOAD_MODEL = False
@@ -68,7 +70,7 @@ def train_fn(train_loader, model, optimzer, loss_fn):
         # Update the progress bar
         loop.set_postfix(loss = loss.item())
 
-    print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
+    return sum(mean_loss)/len(mean_loss)
 
 
 def main():
@@ -79,20 +81,31 @@ def main():
     if LOAD_MODEL:
         load_checkpoint(torch.load(LOAD_MODEL_FILE), model, optimizer)
 
-    train_dataset = VOCDataset("data/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
+    train_dataset = VOCDataset("data/train.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
 
-    test_dataset = VOCDataset("data/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
+    test_dataset = VOCDataset("data/test.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
 
     test_loader = DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
 
+    map_list = []
+    mean_loss_list = []
     for epoch in range(EPOCHS):
         pred_boxes, target_boxes = get_bboxes(train_loader, model, iou_threshold=0.5, threshold=0.4, device=DEVICE)
         map = mean_average_precision(pred_boxes, target_boxes, iou_threshold=0.5, box_format="midpoint")
+        mean_loss = train_fn(train_loader, model, optimizer, loss_fn)
 
         print(f"Train mAP: {map}")
-        train_fn(train_loader, model, optimizer, loss_fn)
+        print(f"Mean loss was {mean_loss}")
+
+        map_list.append(map)
+        mean_loss_list.append(mean_loss)
+
+    plt.plot(map_list)
+    plt.show()
+    plt.plot(mean_loss_list)
+    plt.show()
 
 
 if __name__ == "__main__":
