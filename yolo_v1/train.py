@@ -30,8 +30,8 @@ LEARNING_RATE = 2e-5
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
 WEIGHT_DECAY = 0.0
-EPOCHS = 10
-NUM_WORKERS = 2
+EPOCHS = 300
+NUM_WORKERS = 1
 PIN_MEMORY = True
 LOAD_MODEL = False
 LOAD_MODEL_FILE = "overfit.pth.tar"
@@ -80,8 +80,8 @@ def main():
     if LOAD_MODEL:
         load_checkpoint(torch.load(LOAD_MODEL_FILE), model, optimizer)
 
-    train_dataset = VOCDataset("data/8examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
-    test_dataset = VOCDataset("data/test.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
+    train_dataset = VOCDataset("data/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
+    test_dataset = VOCDataset("data/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
@@ -91,13 +91,12 @@ def main():
 
     for epoch in range(EPOCHS):
 
-        # for x, y in test_loader:
+        # for x, y in train_loader:
         #     x = x.to(DEVICE)
         #     for idx in range(8):
         #         bboxes = cellboxes_to_boxes(model(x))
         #         bboxes = non_max_suppression(bboxes[idx], iou_threshold=0.5, threshold=0.4, box_format="midpoint")
         #         plot_image(x[idx].permute(1,2,0).to("cpu"), bboxes)
-        #     sys.exit()
 
         pred_boxes, target_boxes = get_bboxes(train_loader, model, iou_threshold=0.5, threshold=0.4, device=DEVICE)
         mean_avg_prec = mean_average_precision(pred_boxes, target_boxes, iou_threshold=0.5, box_format="midpoint")
@@ -112,10 +111,12 @@ def main():
 
         mean_loss = train_fn(train_loader, model, optimizer, loss_fn)
 
+        print("Epoch:", epoch)
         print(f"Train mAP: {mean_avg_prec}")
         print(f"Mean loss was {mean_loss}")
         map_list.append(mean_avg_prec)
         mean_loss_list.append(mean_loss)
+
 
     plt.plot(map_list)
     plt.show()
@@ -123,12 +124,12 @@ def main():
     plt.show()
 
     for x, y in test_loader:
-        x = x.to(DEVICE)
-        for idx in range(8):
+        x = x.to("cuda")
+        for idx in range(BATCH_SIZE):
             bboxes = cellboxes_to_boxes(model(x))
             bboxes = non_max_suppression(bboxes[idx], iou_threshold=0.5, threshold=0.4, box_format="midpoint")
-            plot_image(x[idx].permute(1, 2, 0).to("cpu"), bboxes)
-        sys.exit()
+            imgs = x[idx].permute(1, 2, 0).to("cpu")
+            plot_image(imgs, bboxes)
 
 
 if __name__ == "__main__":

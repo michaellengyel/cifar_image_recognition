@@ -67,6 +67,7 @@ class Yolov1(nn.Module):
                 for _ in range(num_repeats):
                     layers += [CNNBlock(in_channels, conv1[1], kernel_size=conv1[0], stride=conv1[2], padding=conv1[3])]
                     layers += [CNNBlock(conv1[1], conv2[1], kernel_size=conv2[0], stride=conv2[2], padding=conv2[3])]
+                in_channels = conv2[1]
 
         return nn.Sequential(*layers)
 

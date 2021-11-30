@@ -1,0 +1,12 @@
+# Directories
+.idea/
+__pycache__/
+
+#data/
+#runs/
+
+yolo_task/data/
+yolo_task/runs/
+yolo_task/info/
+
+# Files
