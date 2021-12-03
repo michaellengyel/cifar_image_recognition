@@ -14,7 +14,7 @@ import os
 import pandas as pd
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 
-LABELS_PATH = "data/annotations/person_keypoints_train2017.json"
+LABELS_PATH = "data/annotations/instances_train2017.json"
 IMAGE_PATH = "data/images/train2017/"
 
 
@@ -26,7 +26,7 @@ def main():
         except JSONDecodeError:
             pass
 
-    #for file_name, annotation in zip(label_data["images"], label_data["annotations"]):
+    # for file_name, annotation in zip(label_data["images"], label_data["annotations"]):
 
     print(len(label_data["images"]))
     for file_name in label_data["images"]:
