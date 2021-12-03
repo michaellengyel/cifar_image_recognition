@@ -14,7 +14,7 @@ import os
 import pandas as pd
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 
-LABELS_PATH = "data/annotations/instances_val2017.json"
+LABELS_PATH = "data/annotations/instances_train2017.json"
 
 
 def main():
@@ -33,8 +33,13 @@ def main():
         if annotation["image_id"] in images:
             images[annotation["image_id"]]["labels"].append({"category_id": annotation["category_id"], "bbox": annotation["bbox"]})
 
+    # TODO: Refactor ugly way to add category_name to each bbox
+    for key, value in images.items():
+        for bbox in value["labels"]:
+            bbox["category_name"] = [x["name"] for x in instance_labels_data["categories"] if x["id"] == bbox["category_id"]][0]
+
     # Dump to json
-    out_file = open("bbox_labels.json", "w")
+    out_file = open("bbox_labels_train.json", "w")
     json.dump(images, out_file, indent=6)
     out_file.close()
 
