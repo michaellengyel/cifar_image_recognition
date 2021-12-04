@@ -25,12 +25,13 @@ class COCODataset(torch.utils.data.Dataset):
         return len(self.annotation)
 
     def __getitem__(self, item):
-        image = Image.open(self.img_dir + "000000000009.jpg")
+        image = Image.open(self.img_dir + self.annotation[item]["file_name"])
+        label = (self.annotation[item]["file_name"], self.annotation[item]["labels"][0]["category_name"])
 
         if self.transform:
             image = self.transform(image)
 
-        return image
+        return image, label
 
 
 def plot_batch(batch):
@@ -54,8 +55,8 @@ def main():
 
     TRAIN_IMG_DIR = "data/images/train2017/"
     TEST_IMG_DIR = "data/images/test2017/"
-    LABEL_DIR = "data/annotations"
-    BATCH_SIZE = 1
+    LABEL_DIR = "bbox_labels_train.json"
+    BATCH_SIZE = 3
     NUM_WORKERS = 1
     PIN_MEMORY = True
 
@@ -63,12 +64,11 @@ def main():
     resize_transform = transforms.ToTensor()
     transform = transforms.Compose([tensor_transform, resize_transform])
 
-    train_dataset = COCODataset("data/annotations/person_keypoints_train2017.json", transform=transform, img_dir=TRAIN_IMG_DIR, label_dir=LABEL_DIR)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
+    train_dataset = COCODataset("bbox_labels_train.json", transform=transform, img_dir=TRAIN_IMG_DIR, label_dir=LABEL_DIR)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=False, drop_last=False)
 
-    print(len(train_loader))
-
-    for image_batch in train_loader:
+    for image_batch, label_batch in train_loader:
+        print(label_batch)
         plot_batch(image_batch)
 
 

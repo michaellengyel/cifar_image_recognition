@@ -38,9 +38,11 @@ def main():
         for bbox in value["labels"]:
             bbox["category_name"] = [x["name"] for x in instance_labels_data["categories"] if x["id"] == bbox["category_id"]][0]
 
+    dict_to_list = [value for key, value in images.items()]
+
     # Dump to json
     out_file = open("bbox_labels_train.json", "w")
-    json.dump(images, out_file, indent=6)
+    json.dump(dict_to_list, out_file, indent=6)
     out_file.close()
 
 
