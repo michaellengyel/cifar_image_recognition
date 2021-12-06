@@ -17,6 +17,7 @@ from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 LABELS_PATH = "bbox_labels_train.json"
 IMAGE_PATH = "data/images/train2017/"
 
+
 def main():
 
     with open(LABELS_PATH) as f:
@@ -25,10 +26,10 @@ def main():
         except JSONDecodeError:
             pass
 
-    for key, value in label_data.items():
+    for label in label_data:
 
-        file_name = value["file_name"]
-        labels = value["labels"]
+        file_name = label["file_name"]
+        labels = label["labels"]
 
         image_path = os.path.join(IMAGE_PATH, file_name)
         image = Image.open(image_path)
