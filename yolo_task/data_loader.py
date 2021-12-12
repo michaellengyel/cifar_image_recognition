@@ -93,7 +93,9 @@ def render_batch(image_batch, label_batch):
             for y in range(label_shape[1]):
                 draw.rectangle(((label[x, y, -9], label[x, y, -8]), (label[x, y, -9] + label[x, y, -7], label[x, y, -8] + label[x, y, -6])), outline="red")
 
-        plot_image(image)
+        fig, ax = plt.subplots(1, figsize=(10, 10))
+        ax.imshow(image)
+        plt.show()
 
 
 def plot_image(image):
@@ -125,15 +127,15 @@ def main():
 
     # Types of preprocessing transforms we want to apply
     convert_transform = transforms.ToTensor()
-    resize_transform = transforms.Resize((224, 224))
+    resize_transform = transforms.Resize((448, 448))
     jitter_transform = transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5)
-    erasing_transform = transforms.RandomErasing()
+    erasing_transform = transforms.RandomErasing()q
     rotation_transform = transforms.RandomRotation((0, 360))
 
     transform = Compose([convert_transform, resize_transform])
 
-    train_dataset = COCODataset("bbox_labels_train.json", S=11, C=100, B=2, transform=transform, img_dir=TRAIN_IMG_DIR, label_dir=LABEL_DIR)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
+    train_dataset = COCODataset("bbox_labels_train.json", S=7, C=100, B=2, transform=transform, img_dir=TRAIN_IMG_DIR, label_dir=LABEL_DIR)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=False, drop_last=False)
 
     for image_batch, label_batch in train_loader:
         render_batch(image_batch, label_batch)

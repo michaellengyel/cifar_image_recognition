@@ -41,7 +41,7 @@ def main():
             draw.rectangle(((bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3])), outline="red")
             draw.text((bbox[0], bbox[1]), category_name, fill="red")
 
-        fig, ax = plt.subplots(1, figsize=(15, 15))
+        fig, ax = plt.subplots(1, figsize=(10, 10))
         ax.imshow(image)
         plt.show()
 
