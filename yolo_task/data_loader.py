@@ -129,7 +129,7 @@ def main():
     convert_transform = transforms.ToTensor()
     resize_transform = transforms.Resize((448, 448))
     jitter_transform = transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5)
-    erasing_transform = transforms.RandomErasing()q
+    erasing_transform = transforms.RandomErasing()
     rotation_transform = transforms.RandomRotation((0, 360))
 
     transform = Compose([convert_transform, resize_transform])
