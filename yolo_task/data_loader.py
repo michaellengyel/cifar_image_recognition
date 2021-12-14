@@ -32,9 +32,6 @@ class COCODataset(torch.utils.data.Dataset):
 
         bboxes = [[x["category_id"], x["bbox"][0], x["bbox"][1], x["bbox"][2], x["bbox"][3]] for x in labels]
 
-        segment_width = image.width / self.S
-        segment_height = image.height / self.S
-
         original_image_width = image.width
         original_image_height = image.height
 
@@ -42,6 +39,9 @@ class COCODataset(torch.utils.data.Dataset):
             image, fake_labels = self.transform(image, bboxes)
 
         image_shape = image.shape
+
+        segment_width = image_shape[1] / self.S
+        segment_height = image_shape[2] / self.S
 
         label_tensor = torch.zeros((self.S, self.S, self.C + 5 * self.B))
 
@@ -93,7 +93,7 @@ def render_batch(image_batch, label_batch):
             for y in range(label_shape[1]):
                 draw.rectangle(((label[x, y, -9], label[x, y, -8]), (label[x, y, -9] + label[x, y, -7], label[x, y, -8] + label[x, y, -6])), outline="red")
 
-        fig, ax = plt.subplots(1, figsize=(10, 10))
+        fig, ax = plt.subplots(1)
         ax.imshow(image)
         plt.show()
 
@@ -112,7 +112,7 @@ def main():
     TRAIN_IMG_DIR = "data/images/train2017/"
     TEST_IMG_DIR = "data/images/test2017/"
     LABEL_DIR = "bbox_labels_train.json"
-    BATCH_SIZE = 4
+    BATCH_SIZE = 16
     NUM_WORKERS = 2
     PIN_MEMORY = True
 
@@ -128,9 +128,6 @@ def main():
     # Types of preprocessing transforms we want to apply
     convert_transform = transforms.ToTensor()
     resize_transform = transforms.Resize((448, 448))
-    jitter_transform = transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5)
-    erasing_transform = transforms.RandomErasing()
-    rotation_transform = transforms.RandomRotation((0, 360))
 
     transform = Compose([convert_transform, resize_transform])
 
