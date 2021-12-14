@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class YoloV1(nn.Module):
-    def __init__(self):
+    def __init__(self, S, B, C):
         super(YoloV1, self).__init__()
 
         self.conv_0 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
@@ -111,10 +111,10 @@ class YoloV1(nn.Module):
         self.leakyrelu_23 = nn.LeakyReLU(0.1)
 
         self.flatten = nn.Flatten()
-        self.linear_0 = nn.Linear(1024 * 7 * 7, 496)
+        self.linear_0 = nn.Linear(1024 * S * S, 496)
         self.dropout = nn.Dropout(0.5)
         self.leakyrelu_fc = nn.LeakyReLU(0.1)
-        self.linear_1 = nn.Linear(496, 7 * 7 * (20 + 2 * 5))
+        self.linear_1 = nn.Linear(496, S * S * (C + B * 5))
 
     def forward(self, x):
 
@@ -223,7 +223,7 @@ class YoloV1(nn.Module):
         out = self.leakyrelu_23(out)
 
         # End of darknet
-        print("Darknet_Out", out.shape)
+        # print("Darknet_Out", out.shape)
 
         out = self.flatten(out)
         out = self.linear_0(out)
@@ -232,7 +232,7 @@ class YoloV1(nn.Module):
         out = self.linear_1(out)
 
         # End of model
-        print("Model_Out", out.shape)
+        # print("Model_Out", out.shape)
 
         return out
 
