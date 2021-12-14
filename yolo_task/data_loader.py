@@ -27,7 +27,7 @@ class COCODataset(torch.utils.data.Dataset):
         return len(self.annotation)
 
     def __getitem__(self, item):
-        image = Image.open(self.img_dir + self.annotation[item]["file_name"])
+        image = Image.open(self.img_dir + self.annotation[item]["file_name"]).convert('RGB')
         labels = self.annotation[item]["labels"]
 
         bboxes = [[x["category_id"], x["bbox"][0], x["bbox"][1], x["bbox"][2], x["bbox"][3]] for x in labels]
