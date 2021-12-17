@@ -135,6 +135,8 @@ def main():
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=False, drop_last=False)
 
     for image_batch, label_batch in train_loader:
+        print(image_batch.shape)
+        print(label_batch.shape)
         render_batch(image_batch, label_batch)
 
 
