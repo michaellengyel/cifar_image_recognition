@@ -111,7 +111,7 @@ class YoloV1(nn.Module):
         self.leakyrelu_23 = nn.LeakyReLU(0.1)
 
         self.flatten = nn.Flatten()
-        self.linear_0 = nn.Linear(1024 * S * S, 496)
+        self.linear_0 = nn.Linear(1024 * 7 * 7, 496)
         self.dropout = nn.Dropout(0.5)
         self.leakyrelu_fc = nn.LeakyReLU(0.1)
         self.linear_1 = nn.Linear(496, S * S * (C + B * 5))

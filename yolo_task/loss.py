@@ -15,7 +15,7 @@ class YoloLoss(nn.Module):
     def forward(self, y_p, y):
 
         iou_b1 = intersection_over_union(y_p[..., 101:105], y[..., 101:105])
-        iou_b2 = intersection_over_union(y_p[..., 106:110], y[..., 106:110])
+        iou_b2 = intersection_over_union(y_p[..., 106:110], y[..., 101:105])
         ious = torch.cat([iou_b1.unsqueeze(0), iou_b2.unsqueeze(0)], dim=0)
         iou_maxes, best_box = torch.max(ious, dim=0)
         exists_box = y[..., 100].unsqueeze(3)  # Identity of object i (is there an object in cell i?)

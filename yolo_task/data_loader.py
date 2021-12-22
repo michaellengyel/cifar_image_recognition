@@ -32,38 +32,41 @@ class COCODataset(torch.utils.data.Dataset):
 
         bboxes = [[x["category_id"], x["bbox"][0], x["bbox"][1], x["bbox"][2], x["bbox"][3]] for x in labels]
 
-        original_image_width = image.width
-        original_image_height = image.height
+        # Original image width
+        image_width = image.width
+        image_height = image.height
 
+        # Apply image transformations
         if self.transform:
             image, fake_labels = self.transform(image, bboxes)
 
+        # Dimensions of the resized (transformed) images
         image_shape = image.shape
 
-        segment_width = image_shape[1] / self.S
-        segment_height = image_shape[2] / self.S
+        # Segment width and height
+        s_width = image_shape[1] / self.S
+        s_height = image_shape[2] / self.S
 
-        label_tensor = torch.zeros((self.S, self.S, self.C + 5 * self.B))
+        label_tensor = torch.zeros((self.S, self.S, self.C + 5))
 
         for bbox in bboxes:
-            cat = bbox[0]
-            x = bbox[1]
-            y = bbox[2]
-            width = bbox[3]
-            height = bbox[4]
 
-            x_corrected = x / original_image_width * image_shape[1]
-            y_corrected = y / original_image_height * image_shape[2]
-            width_corrected = width / original_image_width * image_shape[1]
-            height_corrected = height / original_image_height * image_shape[2]
+            # Original box labels
+            category, x, y, width, height = bbox
 
-            x_center = x_corrected + (width_corrected / 2)
-            y_center = y_corrected + (height_corrected / 2)
-            index_x = int(x_center / segment_width)
-            index_y = int(y_center / segment_height)
-            label_tensor[index_x, index_y, cat] = 1  # Set class label
-            label_tensor[index_x, index_y, self.C] = 1  # Set bbox probability
-            label_tensor[index_x, index_y, self.C:self.C+5] = torch.tensor([1.0, x_corrected, y_corrected, width_corrected, height_corrected])  # Set bbox probability
+            x_norm = x / image_width
+            y_norm = y / image_height
+            w_norm = width / image_width
+            h_norm = height / image_height
+
+            i, j = int(self.S * y_norm), int(self.S * x_norm)
+            x_cell, y_cell = self.S * x_norm - j, self.S * y_norm - i
+            w_cell, h_cell = (w_norm * self.S, h_norm * self.S)
+
+            if label_tensor[i, j, self.C] == 0:
+                label_tensor[i, j, category] = 1  # Set class label
+                label_tensor[i, j, self.C] = 1  # Set bbox probability
+                label_tensor[i, j, self.C:self.C+5] = torch.tensor([1.0, x_cell, y_cell, w_cell, h_cell])  # Set bbox probability
 
         return image, label_tensor
 
@@ -91,7 +94,23 @@ def render_batch(image_batch, label_batch):
 
         for x in range(label_shape[0]):
             for y in range(label_shape[1]):
-                draw.rectangle(((label[x, y, -9], label[x, y, -8]), (label[x, y, -9] + label[x, y, -7], label[x, y, -8] + label[x, y, -6])), outline="red")
+
+                torch.set_printoptions(profile=None, sci_mode=False)
+
+                if label[x, y, -10] > 0.3:
+                    print(label[x, y, :])
+                    x_pos = label[x, y, -9] * 64 + y * 64
+                    y_pos = label[x, y, -8] * 64 + x * 64
+                    width = label[x, y, -7] * 64
+                    height = label[x, y, -6] * 64
+                    draw.rectangle(((x_pos, y_pos), (x_pos + width, y_pos + height)), outline="black")
+                if label[x, y, -5] > 0.3:
+                    print(label[x, y, :])
+                    x_pos = label[x, y, -4] * 64 + y * 64
+                    y_pos = label[x, y, -3] * 64 + x * 64
+                    width = label[x, y, -2] * 64
+                    height = label[x, y, -1] * 64
+                    draw.rectangle(((x_pos, y_pos), (x_pos + width, y_pos + height)), outline="red")
 
         fig, ax = plt.subplots(1)
         ax.imshow(image)
