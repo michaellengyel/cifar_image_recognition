@@ -21,7 +21,7 @@ class LogisticRegression(nn.Module):
 
 
 def main():
-    # 1. Preparing data
+    # 1. Preparing coco
     bc = datasets.load_breast_cancer()
     X, y = bc.data, bc.target
 

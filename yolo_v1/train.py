@@ -35,8 +35,8 @@ NUM_WORKERS = 1
 PIN_MEMORY = True
 LOAD_MODEL = False
 LOAD_MODEL_FILE = "overfit.pth.tar"
-IMG_DIR = "data/images"
-LABEL_DIR = "data/labels"
+IMG_DIR = "../datasets/voc/images"
+LABEL_DIR = "../datasets/voc/labels"
 
 
 class Compose(object):
@@ -80,8 +80,8 @@ def main():
     if LOAD_MODEL:
         load_checkpoint(torch.load(LOAD_MODEL_FILE), model, optimizer)
 
-    train_dataset = VOCDataset("data/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
-    test_dataset = VOCDataset("data/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
+    train_dataset = VOCDataset("../datasets/voc/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
+    test_dataset = VOCDataset("../datasets/voc/100examples.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=False)

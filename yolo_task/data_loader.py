@@ -128,9 +128,9 @@ def plot_image(image):
 
 def main():
 
-    TRAIN_IMG_DIR = "data/images/train2017/"
-    TEST_IMG_DIR = "data/images/test2017/"
-    LABEL_DIR = "bbox_labels_train.json"
+    TRAIN_IMG_DIR = "../datasets/coco/images/train2017/"
+    TEST_IMG_DIR = "../datasets/coco/images/test2017/"
+    LABEL_DIR = "../datasets/bbox_labels_train.json"
     BATCH_SIZE = 16
     NUM_WORKERS = 2
     PIN_MEMORY = True
@@ -150,7 +150,7 @@ def main():
 
     transform = Compose([convert_transform, resize_transform])
 
-    train_dataset = COCODataset("bbox_labels_train.json", S=7, C=100, B=2, transform=transform, img_dir=TRAIN_IMG_DIR, label_dir=LABEL_DIR)
+    train_dataset = COCODataset("../datasets/bbox_labels_train.json", S=7, C=100, B=2, transform=transform, img_dir=TRAIN_IMG_DIR, label_dir=LABEL_DIR)
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=False, drop_last=False)
 
     for image_batch, label_batch in train_loader:

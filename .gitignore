@@ -2,7 +2,7 @@
 .idea/
 __pycache__/
 
-#data/
+#coco/
 #runs/
 
 dataset_dataloader_09/data/
@@ -20,10 +20,10 @@ transfer_learning_15/runs
 rnn_lstm_18/data/
 rnn_lstm_18/runs/
 
-yolo_v1/data/
+datasets/voc/
 yolo_v1/runs/
 
-yolo_task/data/
+datasets/coco/
 yolo_task/runs/
 
 # Files

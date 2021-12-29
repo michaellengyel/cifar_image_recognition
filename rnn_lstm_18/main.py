@@ -44,10 +44,10 @@ def main():
     num_epochs = 2
 
     # MNIST
-    train_dataset = torchvision.datasets.MNIST(root="./data", train=True, transform=transforms.ToTensor(),
+    train_dataset = torchvision.datasets.MNIST(root="./coco", train=True, transform=transforms.ToTensor(),
                                                download=True)
 
-    test_dataset = torchvision.datasets.MNIST(root="./data", train=False, transform=transforms.ToTensor())
+    test_dataset = torchvision.datasets.MNIST(root="./coco", train=False, transform=transforms.ToTensor())
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
@@ -60,7 +60,7 @@ def main():
     print("Structure of first image: ", samples[0][0])
     print("Structure of first batch's labels: ", labels)
 
-    # Plot the data
+    # Plot the coco
     for i in range(10):
         plt.subplot(2, 5, i + 1)
         plt.imshow(samples[i][0], cmap='gray')

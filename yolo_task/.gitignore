@@ -1,8 +1,8 @@
 # Directories
 .idea/
 __pycache__/
-data/
+../datasets/coco/
 runs/
 
 # Files
-bbox_labels_train.json
+../datasets/bbox_labels_train.json

@@ -1,0 +1,8 @@
+# Directories
+.idea/
+__pycache__/
+coco/
+voc/
+
+# Files
+*.json

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    # 1. Preparing data
+    # 1. Preparing coco
 
     x_numpy, y_numpy = datasets.make_regression(n_samples=100, n_features=1, noise=20, random_state=1)
 

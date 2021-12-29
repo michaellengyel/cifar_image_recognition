@@ -14,8 +14,8 @@ import os
 import pandas as pd
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 
-LABELS_PATH = "bbox_labels_train.json"
-IMAGE_PATH = "data/images/train2017/"
+LABELS_PATH = "../datasets/bbox_labels_train.json"
+IMAGE_PATH = "../datasets/coco/images/train2017/"
 
 
 def main():

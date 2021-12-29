@@ -34,7 +34,7 @@ def main():
 
     transform = transforms.Compose([convert_transform, resize_transform])
 
-    image = imageio.imread("data/cat.jpg")
+    image = imageio.imread("coco/cat.jpg")
     plt.imshow(image)
     plt.show()
 

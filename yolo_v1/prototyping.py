@@ -59,7 +59,7 @@ def main():
     transform = transforms.Compose([convert_transform, resize_transform, jitter_transform, erasing_transform])
 
     list_of_image_tensors = []
-    for im_path in glob.glob("data/*.jpg"):
+    for im_path in glob.glob("../datasets/voc/*.jpg"):
         image = imageio.imread(im_path)
         #plot_image(image)
         image = transform(image)

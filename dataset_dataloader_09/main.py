@@ -9,7 +9,7 @@ import math
 
 class WineDataset(Dataset):
     def __init__(self, transform=None):
-        feature_label = np.loadtxt('./data/wine.csv', delimiter=',', dtype=np.float32, skiprows=1)
+        feature_label = np.loadtxt('./coco/wine.csv', delimiter=',', dtype=np.float32, skiprows=1)
         self.feature = feature_label[:, 1:]
         self.label = feature_label[:, [0]]
         self.n_samples = feature_label.shape[0]
@@ -69,7 +69,7 @@ def main():
     # Creating composed transform from multiple user transforms
     composed = torchvision.transforms.Compose([ToTensorTransform(), MultiplicationTransform(3)])
 
-    # Load data
+    # Load coco
     dataset = WineDataset(transform=composed)
     data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
@@ -86,7 +86,7 @@ def main():
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     # Training loop
-    # TODO: Put data in [0-1] ranged, one hot encode the labels
+    # TODO: Put coco in [0-1] ranged, one hot encode the labels
     for epoch in range(num_epochs):
         for i, (inputs, labels) in enumerate(data_loader):
 

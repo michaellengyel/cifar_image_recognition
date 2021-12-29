@@ -67,7 +67,7 @@ def main():
                 running_loss = 0.0
                 running_corrects = 0
 
-                # Iterate over data
+                # Iterate over coco
                 for inputs, labels in dataloaders[phase]:
 
                     if visualization:

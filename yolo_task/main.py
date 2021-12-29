@@ -19,10 +19,10 @@ from utils import loss_function
 
 def main():
 
-    TRAIN_IMG_DIR = "data/images/train2017/"
-    VAL_IMG_DIR = "data/images/val2017/"
-    TEST_IMG_DIR = "data/images/test2017/"
-    LABEL_DIR = "bbox_labels_train.json"
+    TRAIN_IMG_DIR = "../datasets/coco/images/train2017/"
+    VAL_IMG_DIR = "../datasets/coco/images/val2017/"
+    TEST_IMG_DIR = "../datasets/coco/images/test2017/"
+    LABEL_DIR = "../datasets/bbox_labels_train.json"
     BATCH_SIZE = 16
     NUM_WORKERS = 2
     PIN_MEMORY = True
@@ -52,10 +52,10 @@ def main():
     resize_transform = transforms.Resize((448, 448))
     transform = Compose([convert_transform, resize_transform])
 
-    train_dataset = COCODataset("bbox_labels_val.json", S=S, C=C, B=B, transform=transform, img_dir=VAL_IMG_DIR, label_dir=LABEL_DIR)
+    train_dataset = COCODataset("../datasets/bbox_labels_val.json", S=S, C=C, B=B, transform=transform, img_dir=VAL_IMG_DIR, label_dir=LABEL_DIR)
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=True)
 
-    val_dataset = COCODataset("bbox_labels_val.json", S=S, C=C, B=B, transform=transform, img_dir=VAL_IMG_DIR, label_dir=LABEL_DIR)
+    val_dataset = COCODataset("../datasets/bbox_labels_val.json", S=S, C=C, B=B, transform=transform, img_dir=VAL_IMG_DIR, label_dir=LABEL_DIR)
     val_loader = DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY, shuffle=True, drop_last=True)
 
     model = YoloV1(S=S, B=B, C=C).to(DEVICE)
