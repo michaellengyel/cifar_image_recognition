@@ -7,9 +7,9 @@ class YoloV1(nn.Module):
     def __init__(self, S, B, C, pretrained):
         super(YoloV1, self).__init__()
 
-        self.resnet18 = models.resnet18(pretrained=pretrained)
+        self.resnet = models.resnet18(pretrained=pretrained)
 
-        self.resnet18.fc = nn.Linear(self.resnet18.fc.in_features, 496)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 496)
 
         self.dropout = nn.Dropout(0.5)
         self.leakyrelu_fc = nn.LeakyReLU(0.1)
@@ -17,7 +17,7 @@ class YoloV1(nn.Module):
 
     def forward(self, x):
 
-        out = self.resnet18(x)
+        out = self.resnet(x)
 
         out = self.dropout(out)
         out = self.leakyrelu_fc(out)
@@ -30,9 +30,9 @@ def main():
 
     x = torch.randn((13, 3, 448, 448))
 
-    resnet18 = models.resnet18(pretrained=True)
-    resnet18.eval()
-    y_p = resnet18(x)
+    resnet = models.resnet18(pretrained=True)
+    resnet.eval()
+    y_p = resnet(x)
     print(y_p.shape)
 
     yolov1 = YoloV1(S=7, B=2, C=20, pretrained=True)

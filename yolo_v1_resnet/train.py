@@ -23,7 +23,7 @@ def main():
     IMG_DIR = "../datasets/voc/images"
     LABEL_DIR = "../datasets/voc/labels"
     MAPPING_FILE = "../datasets/voc/100examples.csv"
-    BATCH_SIZE = 16
+    BATCH_SIZE = 8
     NUM_WORKERS = 2
     PIN_MEMORY = True
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -61,11 +61,18 @@ def main():
 
     model = YoloV1(S=S, B=B, C=C, pretrained=PRETRAINED).to(DEVICE)
 
+    for counter, param in enumerate(model.resnet.parameters()):
+        param.requires_grad = True
+    model.resnet.fc.requires_grad = True
+
     for counter, param in enumerate(model.parameters()):
-        if counter < 63:
-            param.requires_grad = True
-            print(counter, param.requires_grad)
-    model.resnet18.fc.requires_grad = True
+        print(counter, param.requires_grad)
+
+    parameters = [param.numel() for param in model.parameters()]
+    print("Number of model parameters", sum(parameters))
+
+    parameters = [param.numel() for param in model.resnet.parameters()]
+    print("Number of resnet parameters", sum(parameters))
 
     parameter_list = filter(lambda p: p.requires_grad, model.parameters())
 
