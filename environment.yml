@@ -21,9 +21,11 @@ dependencies:
   - quaternion
   - pip
   - pip:
+    - torchvision==0.8.0
     #- torch==1.7.1+cu101
     #- torchvision==0.8.2+cu101
     #- torchaudio==0.7.2
     - torch==1.7.1
     - imageio
+    - albumentations
 
