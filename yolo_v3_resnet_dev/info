@@ -1,0 +1,16 @@
+Data Loading:
+- Using pytorch's dataloader, a batch of data should be loaded:
+- Transform images into a format accepted by the NN. E.g. 416x416 using padding. (argumentations)
+- Transform bbox labels into a formate which is the same as that of the transformed image (argumentations)
+- Transform bbox labels into yolo labels -> S1: 13x13, S2: 26x26, S3: 52x52
+- Question: Each scale's each cell has 3 bboxes. Is this needed in the yolo labels?
+- Into which scale do I put a given bbox?
+
+Data Loading Unit Test:
+- Each helper function in the dataloader should be unit tested
+
+Main Function:
+-
+
+
+https://realpython.com/python-testing/
