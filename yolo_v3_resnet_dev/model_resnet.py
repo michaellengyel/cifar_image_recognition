@@ -106,7 +106,6 @@ class FeatureExtractor(nn.Module):
             elif x.shape == (16, 256, 26, 26):
                 route_connections.append(x)
 
-        # x = self.resnet(x)
         x = self.conv(x)
         return x, route_connections
 
@@ -116,20 +115,14 @@ class YoloV3(nn.Module):
         super(YoloV3, self).__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
-        #self.layers = self._create_resnet_layers()
         self.feature_extractor = FeatureExtractor()
         self.layers = self._create_conv_layers()
 
     def forward(self, x):
 
         x, route_connections = self.feature_extractor(x)
-        print(x.shape)
 
         outputs = []
-        #route_connections = []
-
-        #route_connections.append(torch.randn((16, 256, 52, 52)))
-        #route_connections.append(torch.randn((16, 512, 26, 26)))
 
         for index, layer in enumerate(self.layers):
             if isinstance(layer, ScalePrediction):
@@ -142,28 +135,14 @@ class YoloV3(nn.Module):
                 route_connections.append(x)
 
             elif isinstance(layer, nn.Upsample):
-                print(x.shape)
                 x = torch.cat([x, route_connections[-1]], dim=1)
                 route_connections.pop()
 
         return outputs
 
-    def _create_resnet_layers(self):
-        layers = nn.ModuleList()
-        resnet = models.resnet18(pretrained=True)
-        for layer in resnet.children():
-            layers.append(layer)
-        layers = layers[:-2]
-        return layers
-
     def _create_conv_layers(self):
         layers = nn.ModuleList()
         in_channels = self.in_channels
-
-        #resnet = models.resnet18(pretrained=True)
-        #for layer in resnet.children():
-        #    layers.append(layer)
-        #layers = layers[:-2]
 
         for module in config:
             if isinstance(module, tuple):
@@ -193,7 +172,6 @@ class YoloV3(nn.Module):
 
 def main():
 
-    # print(config)
     num_classes = 20
     IMAGE_SIZE = 416
     model = YoloV3(num_classes=num_classes)

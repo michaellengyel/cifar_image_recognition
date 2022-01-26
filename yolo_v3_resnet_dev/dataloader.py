@@ -24,7 +24,7 @@ def centered_iou(boxes_target, boxes_prediction):
     return intersection / union
 
 
-def bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scale, anchors, Scale):
+def bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scale, anchor_boxes, Scale):
     """
     This function transforms the bboxes (labels) into a target structure. The target is a list of different sized 4D
     tensors e.g. list(torch.shape(3, 13, 13, 6), torch.shape(3, 26, 26, 6), torch.shape(3, 52, 52, 6))
@@ -37,7 +37,7 @@ def bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scal
     :return:
     """
     for box in bboxes:
-        iou_anchors = centered_iou(box[2:4].clone().detach(), anchors)
+        iou_anchors = centered_iou(torch.tensor(box[2:4]), anchor_boxes)
         anchor_indices = iou_anchors.argsort(descending=True, dim=0)
         x, y, width, height, class_label = box
         has_anchor = [False, False, False]
@@ -65,16 +65,17 @@ def bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scal
 
 
 class YoloDataset(Dataset):
-    def __init__(self, csv_file, image_dir, label_dir, transforms, anchor_boxes, number_of_anchors, number_of_scales, ignore_iou_threshold, S=[13, 26, 52], C=20):
+    def __init__(self, csv_file, image_dir, label_dir, transforms, anchor_boxes, number_of_anchors, number_of_scales, ignore_iou_threshold, num_anchors_per_scale, Scale=[13, 26, 52], C=20):
         self.annotations = pd.read_csv(csv_file)
         self.image_dir = image_dir
         self.label_dir = label_dir
         self.transforms = transforms
-        self.anchor_boxes = anchor_boxes
+        self.anchor_boxes = torch.tensor(anchor_boxes[0] + anchor_boxes[1] + anchor_boxes[2])
         self.number_of_anchors = number_of_anchors
         self.number_of_scales = number_of_scales
         self.ignore_iou_threshold = ignore_iou_threshold
-        self.S = S
+        self.num_anchors_per_scale = num_anchors_per_scale
+        self.Scale = Scale
         self.C = C
 
     def __len__(self):
@@ -83,17 +84,16 @@ class YoloDataset(Dataset):
     def __getitem__(self, index):
         label_path = os.path.join(self.label_dir, self.annotations.iloc[index, 1])
         bboxes = np.roll(np.loadtxt(fname=label_path, delimiter=" ", ndmin=2), 4, axis=1).tolist()  # [x, y, w, h, c]
-        img_path = os.path.join(self.img_dir, self.annotations.iloc[index, 0])
+        img_path = os.path.join(self.image_dir, self.annotations.iloc[index, 0])
         image = np.array(Image.open(img_path).convert("RGB"))
 
         argumentations = self.transforms(image=image, bboxes=bboxes)
-
         image = argumentations["image"]
-        bboxes = argumentations["boxes"]
+        bboxes = argumentations["bboxes"]
 
-        targets = [torch.zeros((self.number_of_scales, scale, scale, 6)) for scale in self.S]
+        targets = [torch.zeros((self.number_of_scales, scale, scale, 6)) for scale in self.Scale]
 
-        targets = self.bboxes_to_target(bboxes, targets)
+        targets = bboxes_to_target(bboxes, targets, self.ignore_iou_threshold, self.num_anchors_per_scale, self.anchor_boxes, self.Scale)
 
         return image, tuple(targets)
 

@@ -26,4 +26,7 @@ yolo_v1/runs/
 datasets/coco/
 yolo_task/runs/
 
+yolo_v3_resnet_dev/data
+yolo_v3_resnet_dev/runs
+
 # Files
