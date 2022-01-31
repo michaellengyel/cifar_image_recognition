@@ -17,8 +17,9 @@ NMS_IOU_THRESH = 0.45  # Non Max Suppression for bounding box removal
 Scale = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8]  # 13, 26, 52
 C = 20
 PIN_MEMORY = True
-LOAD_MODEL = False
-SAVE_MODEL = False
+LOAD_MODEL = True
+SAVE_MODEL = True
+SAVE_FREQUENCY = 10
 CHECKPOINT_FILE = "checkpoint.pth.tar"
 IMG_DIR = DATASET + "images/"
 LABEL_DIR = DATASET + "labels/"
@@ -78,3 +79,36 @@ min_transforms = A.Compose(
     ],
     bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[])
 )
+
+max_transforms = A.Compose(
+    [
+        A.LongestMaxSize(max_size=int(IMAGE_SIZE)),
+        A.PadIfNeeded(min_height=int(IMAGE_SIZE), min_width=int(IMAGE_SIZE), border_mode=cv2.BORDER_CONSTANT),
+        ToTensorV2()
+    ],
+    bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[])
+)
+
+PASCAL_CLASSES = [
+    'aeroplane',
+    'bicycle',
+    'bird',
+    'boat',
+    'bottle',
+    'bus',
+    'car',
+    'cat',
+    'chair',
+    'cow',
+    'diningtable',
+    'dog',
+    'horse',
+    'motorbike',
+    'person',
+    'pottedplant',
+    'sheep',
+    'sofa',
+    'train',
+    'tvmonitor',
+    'none'
+]

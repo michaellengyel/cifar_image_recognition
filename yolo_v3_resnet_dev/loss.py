@@ -63,5 +63,5 @@ class YoloLoss(nn.Module):
         object_loss = self.object_loss(obj, predictions, target, anchors)
         box_coordinate_loss = self.box_coordinate_loss(obj, predictions, target, anchors)
         class_loss = self.class_loss(obj, predictions, target)
-        return no_object_loss + object_loss + box_coordinate_loss + class_loss
+        return (no_object_loss * 10) + object_loss + (box_coordinate_loss * 10) + class_loss
 
