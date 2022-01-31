@@ -104,7 +104,6 @@ def main():
                 x_gpu = x_gpu.to(config.DEVICE)
                 yp = model(x_gpu)
                 yp = [yp[0].to('cpu'), yp[1].to('cpu'), yp[2].to('cpu')]
-                # x = x.to('cpu')
             x = draw_yp_on_x(x, yp, class_threshold=0.75, anchors=config.ANCHORS)
             grid = torchvision.utils.make_grid(x, nrow=4)
             writer.add_image("yp_on_x", grid, global_step=epoch)

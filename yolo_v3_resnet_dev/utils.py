@@ -509,44 +509,34 @@ def draw_y_on_x(x, y):
 
 def draw_yp_on_x(x, yp, class_threshold, anchors):
 
-    for batch in range(x.shape[0]):
+    batch, channel, width, height = x.shape
+
+    for b in range(batch):
 
         boxes = []
         classes = []
 
         for scale in range(len(yp)):
-            anchors[scale]
-            # print(y[scale][batch, ...].shape)
-            for i in range(yp[scale][batch, ...].shape[0]):
-                for j in range(yp[scale][batch, ...].shape[1]):
-                    for k in range(yp[scale][batch, ...].shape[2]):
-                        cell = yp[scale][batch, i, j, k, ...]
+            yp_anchor, yp_w, yp_h, _ = yp[scale][b, ...].shape
+            for a in range(yp_anchor):
+                for w in range(yp_w):
+                    for h in range(yp_h):
+                        cell = yp[scale][b, a, w, h, ...]
                         if cell[0] > class_threshold:
-                            cell_bbox = cell[1:5]
-                            cell_number = yp[scale][batch, ...].shape[1]  # 13, 26, 52
-                            box_size = 416 / cell_number
+                            bbox_yp = cell[1:5]
+                            num_cells = yp[scale][b, ...].shape[1]  # 13, 26, 52
+                            box_size = width / num_cells
 
-                            bbox_yolo = torch.tensor([torch.sigmoid(cell_bbox[0]) + k * box_size,
-                                                      torch.sigmoid(cell_bbox[1]) + j * box_size,
-                                                      anchors[scale][i][0] * math.pow(math.e, cell_bbox[2]),
-                                                      anchors[scale][i][1] * math.pow(math.e, cell_bbox[3])])
-
-                            bbox_yolo = bbox_yolo * torch.tensor([1, 1, 416, 416])
-
-                            bbox_corner = torch.tensor([bbox_yolo[0] - bbox_yolo[2] / 2,
-                                                      bbox_yolo[1] - bbox_yolo[3] / 2,
-                                                      bbox_yolo[0] + bbox_yolo[2] / 2,
-                                                      bbox_yolo[1] + bbox_yolo[3] / 2])
-
-                            """
-                            bbox_yolo = cell_bbox * torch.tensor([box_size, box_size, box_size, box_size])
-                            bbox_yolo = bbox_yolo + torch.tensor([box_size * k, box_size * j, 0, 0])
-                            bbox_yolo = torch.tensor([bbox_yolo[0] - bbox_yolo[2] / 2,
-                                                      bbox_yolo[1] - bbox_yolo[3] / 2,
-                                                      bbox_yolo[0] + bbox_yolo[2] / 2,
-                                                      bbox_yolo[1] + bbox_yolo[3] / 2])
-                            bbox_yolo = bbox_yolo * torch.tensor([1, 1, math.pow(math.e, anchors[scale][i][0]), math.pow(math.e, anchors[scale][i][1])])
-                            """
+                            # Decode yp
+                            bbox_yolo = torch.tensor([torch.sigmoid(bbox_yp[0]) + h * box_size,
+                                                      torch.sigmoid(bbox_yp[1]) + w * box_size,
+                                                      anchors[scale][a][0] * math.pow(math.e, bbox_yp[2]),
+                                                      anchors[scale][a][1] * math.pow(math.e, bbox_yp[3])])
+                            bbox_yolo_scaled = bbox_yolo * torch.tensor([1, 1, width, height])
+                            bbox_corner = torch.tensor([bbox_yolo_scaled[0] - bbox_yolo_scaled[2] / 2,
+                                                        bbox_yolo_scaled[1] - bbox_yolo_scaled[3] / 2,
+                                                        bbox_yolo_scaled[0] + bbox_yolo_scaled[2] / 2,
+                                                        bbox_yolo_scaled[1] + bbox_yolo_scaled[3] / 2])
 
                             boxes.append(bbox_corner.tolist())
                             class_args = cell[5:].argsort(descending=True, dim=0)
@@ -554,6 +544,6 @@ def draw_yp_on_x(x, yp, class_threshold, anchors):
 
         boxes = torch.tensor(boxes)
         labels = [config.PASCAL_CLASSES[x] for x in classes]
-        x[batch, ...] = draw_bounding_boxes(image=x[batch, ...].type(torch.uint8), boxes=boxes, colors=(255, 0, 255), labels=labels, width=1)
+        x[b, ...] = draw_bounding_boxes(image=x[b, ...].type(torch.uint8), boxes=boxes, colors=(255, 0, 255), labels=labels, width=1)
 
     return x
