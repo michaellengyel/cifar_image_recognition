@@ -21,6 +21,7 @@ LOAD_MODEL = True
 SAVE_MODEL = True
 SAVE_FREQUENCY = 10
 CHECKPOINT_FILE = "checkpoint.pth.tar"
+TRAINED_FILE = "checkpoint_trained.pth.tar"
 IMG_DIR = DATASET + "images/"
 LABEL_DIR = DATASET + "labels/"
 
