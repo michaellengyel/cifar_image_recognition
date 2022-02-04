@@ -17,11 +17,11 @@ NMS_IOU_THRESH = 0.45  # Non Max Suppression for bounding box removal
 Scale = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8]  # 13, 26, 52
 C = 20
 PIN_MEMORY = True
-LOAD_MODEL = True
+LOAD_MODEL = False
 SAVE_MODEL = True
 SAVE_FREQUENCY = 10
 CHECKPOINT_FILE = "checkpoint.pth.tar"
-TRAINED_FILE = "checkpoint_trained.pth.tar"
+TRAINED_FILE = "checkpoint_train.pth.tar"
 IMG_DIR = DATASET + "images/"
 LABEL_DIR = DATASET + "labels/"
 

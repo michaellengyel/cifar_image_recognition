@@ -92,7 +92,7 @@ class FeatureExtractor(nn.Module):
         super(FeatureExtractor, self).__init__()
         resnet = models.resnet18(pretrained=True)
         for param in resnet.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
         _resnet = list(resnet.children())[:-2]
         self.resnet = nn.Sequential(*_resnet)  # Resnet without the fc layer
         self.conv = CNNBlock(512, 2*512, kernel_size=3, padding=1)

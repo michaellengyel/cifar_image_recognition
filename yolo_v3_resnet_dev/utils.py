@@ -482,17 +482,15 @@ def draw_y_on_x(x, y):
 
         for scale in range(len(y)):
             # print(y[scale][batch, ...].shape)
-            for i in range(y[scale][batch, ...].shape[0]):
-                for j in range(y[scale][batch, ...].shape[1]):
-                    for k in range(y[scale][batch, ...].shape[2]):
-                        cell = y[scale][batch, i, j, k, ...]
+            for a in range(y[scale][batch, ...].shape[0]):
+                for w in range(y[scale][batch, ...].shape[1]):
+                    for h in range(y[scale][batch, ...].shape[2]):
+                        cell = y[scale][batch, a, w, h, ...]
                         if cell[0] == 1:
                             bbox = cell[1:5]
                             cell_number = y[scale][batch, ...].shape[1]
                             box_size = 416 / cell_number
-                            bbox_yolo = torch.tensor(
-                                [box_size, box_size, box_size, box_size]) * bbox + torch.tensor(
-                                [box_size * k, box_size * j, 0, 0])
+                            bbox_yolo = torch.tensor([box_size, box_size, box_size, box_size]) * bbox + torch.tensor([box_size * h, box_size * w, 0, 0])
                             bbox_corners = torch.tensor([bbox_yolo[0] - bbox_yolo[2] / 2,
                                                          bbox_yolo[1] - bbox_yolo[3] / 2,
                                                          bbox_yolo[0] + bbox_yolo[2] / 2,
@@ -574,13 +572,8 @@ def non_maximum_suppression(bboxes, iou_threshold, threshold, box_format="corner
     # bboxes = [bbox for bbox in bboxes if bbox[0] > threshold]
     bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
     nms_bboxes = []
-
     while bboxes:
-
         chosen_box = bboxes.pop(0)
-
-        bboxes = [box for box in bboxes if box[5] != chosen_box[5] or intersection_over_union(torch.tensor(chosen_box[1:5]), torch.tensor(box[1:5]), box_format=box_format) < iou_threshold]
-
+        bboxes = [box for box in bboxes if box[5] != chosen_box[5] or intersection_over_union(chosen_box[1:5], box[1:5], box_format=box_format) < iou_threshold]
         nms_bboxes.append(chosen_box)
-
     return nms_bboxes

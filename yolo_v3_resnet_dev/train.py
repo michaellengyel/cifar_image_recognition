@@ -45,13 +45,15 @@ def main():
 
     # Loading previously saved model weights
     if config.LOAD_MODEL:
-        load_checkpoint(config.CHECKPOINT_FILE, model, optimizer, config.LEARNING_RATE)
+        load_checkpoint(config.TRAINED_FILE, model, optimizer, config.LEARNING_RATE)
 
+    # Epoch loop
     for epoch in range(config.NUM_EPOCHS):
 
         print("Epoch:", epoch)
-        model.train()
 
+        # Run training
+        model.train()
         losses = []
         for x, y in train_loader:
             x = x.float()
@@ -68,35 +70,25 @@ def main():
                 scalar.scale(loss).backward()
                 scalar.step(optimizer)
                 scalar.update()
-
         mean_loss = sum(losses) / len(losses)
 
+        # Run evaluation
         if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
 
+            # Perform evaluation calculations
             model.eval()
             class_accuracy, no_object_accuracy, obj_accuracy = check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
             prediction_boxes, true_boxes = get_evaluation_bboxes(test_loader, model, iou_threshold=config.NMS_IOU_THRESH, anchors=config.ANCHORS, threshold=config.CONF_THRESHOLD)
             mean_avg_prec = mean_average_precision(prediction_boxes, true_boxes, iou_threshold=config.MAP_IOU_THRESH, box_format='midpoint', num_classes=config.C)
 
-            # Log data
+            # Log evaluation variables
             writer.add_scalar("Average Loss: ", mean_loss, epoch)
             writer.add_scalar("class_accuracy", class_accuracy, epoch)
             writer.add_scalar("no_object_accuracy", no_object_accuracy, epoch)
             writer.add_scalar("obj_accuracy", obj_accuracy, epoch)
             writer.add_scalar("mean_avg_prec", mean_avg_prec, epoch)
 
-        delta_time, current_time = time_function(current_time)
-        writer.add_scalar("Epoch Duration [s]", delta_time, epoch)
-
-        # Draw label bboxes
-        # if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
-            # x, y = next(x for i, x in enumerate(test_loader) if i == 5)
-            # x = draw_y_on_x(x, y)
-            # grid = torchvision.utils.make_grid(x, nrow=4)
-            # writer.add_image("y_on_x", grid, global_step=epoch)
-
-        # Draw prediction bboxes
-        if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
+            # Render prediction bboxes
             x, y = next(x for i, x in enumerate(test_loader) if i == 5)
             model.eval()
             with torch.no_grad():
@@ -104,13 +96,16 @@ def main():
                 x_gpu = x_gpu.to(config.DEVICE)
                 yp = model(x_gpu)
                 yp = [yp[0].to('cpu'), yp[1].to('cpu'), yp[2].to('cpu')]
-            x = draw_yp_on_x(x, yp, class_threshold=0.5, anchors=config.ANCHORS)
+            x = draw_yp_on_x(x, yp, probability_threshold=0.5, anchors=config.ANCHORS)
             grid = torchvision.utils.make_grid(x, nrow=4)
-            writer.add_image("yp_on_x", grid, global_step=epoch)
+            writer.add_image("yp on x", grid, global_step=epoch)
 
         # Save model
         if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
             save_checkpoint(model, optimizer, filename=config.CHECKPOINT_FILE)
+
+        delta_time, current_time = time_function(current_time)
+        writer.add_scalar("Epoch Duration [s]", delta_time, epoch)
 
         writer.flush()
 
