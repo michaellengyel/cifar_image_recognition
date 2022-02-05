@@ -514,15 +514,20 @@ def draw_yp_on_x(x, yp, probability_threshold, anchors):
         boxes = []
 
         for scale in range(len(yp)):
+
             yp_anchor, yp_w, yp_h, _ = yp[scale][b, ...].shape
+            num_cells = yp[scale][b, ...].shape[1]  # 13, 26, 52
+            box_size = width / num_cells  # width = 416
+
             for a in range(yp_anchor):
                 for w in range(yp_w):
                     for h in range(yp_h):
 
-                        # p, x, y, w, h, logits
-                        cell = yp[scale][b, a, w, h, ...]
+                        # Current cell probability is above threshold
+                        if yp[scale][b, a, w, h, 0] > probability_threshold:
 
-                        if cell[0] > probability_threshold:
+                            # p, x, y, w, h, logit
+                            cell = yp[scale][b, a, w, h, ...]
 
                             # p, x, y, w, h
                             cell_class = torch.argmax(cell[5:])
@@ -530,30 +535,21 @@ def draw_yp_on_x(x, yp, probability_threshold, anchors):
                             # p, x, y, w, h, c
                             cell_box = torch.cat((cell[0:5], torch.tensor([cell_class])), dim=0)
 
-                            # 13, 26, 52
-                            num_cells = yp[scale][b, ...].shape[1]
-
-                            # width = 416
-                            box_size = width / num_cells
-
                             # Decode yp
                             bbox_yolo = torch.tensor([cell_box[0],
-                                                      torch.sigmoid(cell_box[1]) + h * box_size,
-                                                      torch.sigmoid(cell_box[2]) + w * box_size,
-                                                      anchors[scale][a][0] * math.pow(math.e, cell_box[3]),
-                                                      anchors[scale][a][1] * math.pow(math.e, cell_box[4]),
+                                                      torch.sigmoid(cell_box[1]) + (h + 0.5) * box_size,
+                                                      torch.sigmoid(cell_box[2]) + (w + 0.5) * box_size,
+                                                      anchors[scale][a][0] * math.pow(math.e, cell_box[3]) * width,
+                                                      anchors[scale][a][1] * math.pow(math.e, cell_box[4]) * height,
                                                       cell_box[5]])
 
-                            # Scale width and height to image size
-                            bbox_yolo_scaled = bbox_yolo * torch.tensor([1, 1, 1, width, height, 1])
-
                             # Convert bbox midpoints to corners
-                            bbox_corner = torch.tensor([bbox_yolo_scaled[0],
-                                                        bbox_yolo_scaled[1] - bbox_yolo_scaled[3] / 2,
-                                                        bbox_yolo_scaled[2] - bbox_yolo_scaled[4] / 2,
-                                                        bbox_yolo_scaled[1] + bbox_yolo_scaled[3] / 2,
-                                                        bbox_yolo_scaled[2] + bbox_yolo_scaled[4] / 2,
-                                                        bbox_yolo_scaled[5]])
+                            bbox_corner = torch.tensor([bbox_yolo[0],
+                                                        bbox_yolo[1] - bbox_yolo[3] / 2,
+                                                        bbox_yolo[2] - bbox_yolo[4] / 2,
+                                                        bbox_yolo[1] + bbox_yolo[3] / 2,
+                                                        bbox_yolo[2] + bbox_yolo[4] / 2,
+                                                        bbox_yolo[5]])
 
                             boxes.append(bbox_corner)
 
