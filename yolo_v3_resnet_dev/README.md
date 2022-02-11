@@ -1,7 +1,12 @@
 # Yolo V3 Implementation
 
 ## Data
-Topics: VOC vs. COCO, Calculating anchor boxes.  
+Topics: VOC vs. COCO, Calculate anchor boxes using K-means clustering.  
+
+<p align="center">
+  <img src="./doc/voc_anchors.png" width="450" title="hover text">
+  <img src="./doc/voc_anchors.png" width="450" alt="accessibility text">
+</p>
 
 ## Dataloader
 Topics: Creating targets from labels (y), Augmenting data (x) with albumentations. Difference between training  
@@ -42,3 +47,6 @@ Analyse: https://github.com/ultralytics/yolov5/issues/918
 A more extensive analysis of the fully trained network to evaluate it's performance.  
 
 # Miscellaneous Topics
+
+# Generic Environment Terms
+TensorRT, CUDA, cuDNN
