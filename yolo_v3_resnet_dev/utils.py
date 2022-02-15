@@ -286,9 +286,7 @@ def mean_average_precision(pred_boxes, true_boxes, iou_threshold=0.5, box_format
         detections = []
         ground_truths = []
 
-        # Go through all predictions and targets,
-        # and only add the ones that belong to the
-        # current class c
+        # Go through all predictions and targets, and only add the ones that belong to the current class c
         for detection in pred_boxes:
             if detection[1] == c:
                 detections.append(detection)
@@ -297,15 +295,12 @@ def mean_average_precision(pred_boxes, true_boxes, iou_threshold=0.5, box_format
             if true_box[1] == c:
                 ground_truths.append(true_box)
 
-        # find the amount of bboxes for each training example
-        # Counter here finds how many ground truth bboxes we get
-        # for each training example, so let's say img 0 has 3,
-        # img 1 has 5 then we will obtain a dictionary with:
+        # find the amount of bboxes for each training example Counter here finds how many ground truth bboxes we get
+        # for each training example, so let's say img 0 has 3, img 1 has 5 then we will obtain a dictionary with:
         # amount_bboxes = {0:3, 1:5}
         amount_bboxes = Counter([gt[0] for gt in ground_truths])
 
-        # We then go through each key, val in this dictionary
-        # and convert to the following (w.r.t same example):
+        # We then go through each key, val in this dictionary and convert to the following (w.r.t same example):
         # ammount_bboxes = {0:torch.tensor[0,0,0], 1:torch.tensor[0,0,0,0,0]}
         for key, val in amount_bboxes.items():
             amount_bboxes[key] = torch.zeros(val)
@@ -321,21 +316,14 @@ def mean_average_precision(pred_boxes, true_boxes, iou_threshold=0.5, box_format
             continue
 
         for detection_idx, detection in enumerate(detections):
-            # Only take out the ground_truths that have the same
-            # training idx as detection
-            ground_truth_img = [
-                bbox for bbox in ground_truths if bbox[0] == detection[0]
-            ]
+            # Only take out the ground_truths that have the same training idx as detection
+            ground_truth_img = [bbox for bbox in ground_truths if bbox[0] == detection[0]]
 
             num_gts = len(ground_truth_img)
             best_iou = 0
 
             for idx, gt in enumerate(ground_truth_img):
-                iou = intersection_over_union(
-                    torch.tensor(detection[3:]),
-                    torch.tensor(gt[3:]),
-                    box_format=box_format,
-                )
+                iou = intersection_over_union(torch.tensor(detection[3:]), torch.tensor(gt[3:]), box_format=box_format)
 
                 if iou > best_iou:
                     best_iou = iou
@@ -350,7 +338,7 @@ def mean_average_precision(pred_boxes, true_boxes, iou_threshold=0.5, box_format
                 else:
                     FP[detection_idx] = 1
 
-            # if IOU is lower then the detection is a false positive
+            # if IOU is lower than the detection is a false positive
             else:
                 FP[detection_idx] = 1
 
@@ -363,7 +351,8 @@ def mean_average_precision(pred_boxes, true_boxes, iou_threshold=0.5, box_format
         # torch.trapz for numerical integration
         average_precisions.append(torch.trapz(precisions, recalls))
 
-    return sum(average_precisions) / len(average_precisions)
+    mean_avg_prec = sum(average_precisions) / len(average_precisions)
+    return mean_avg_prec
 
 
 def get_evaluation_bboxes(loader, model, iou_threshold, anchors, threshold, box_format="midpoint", device="cuda"):
@@ -375,7 +364,6 @@ def get_evaluation_bboxes(loader, model, iou_threshold, anchors, threshold, box_
     for batch_idx, (x, labels) in enumerate(loader):
         x = x.float()
         x = x.to(device)
-
         with torch.no_grad():
             predictions = model(x)
 
@@ -392,12 +380,7 @@ def get_evaluation_bboxes(loader, model, iou_threshold, anchors, threshold, box_
         true_bboxes = cells_to_bboxes(labels[2], anchor, S=S, is_preds=False)
 
         for idx in range(batch_size):
-            nms_boxes = non_max_suppression(
-                bboxes[idx],
-                iou_threshold=iou_threshold,
-                threshold=threshold,
-                box_format=box_format,
-            )
+            nms_boxes = non_max_suppression(bboxes[idx], iou_threshold=iou_threshold, threshold=threshold, box_format=box_format)
 
             for nms_box in nms_boxes:
                 all_pred_boxes.append([train_idx] + nms_box)

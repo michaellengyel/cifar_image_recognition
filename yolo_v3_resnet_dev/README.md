@@ -4,8 +4,8 @@
 Topics: VOC vs. COCO, Calculate anchor boxes using K-means clustering.  
 
 <p align="center">
-  <img src="./doc/voc_anchors.png" width="450" title="hover text">
-  <img src="./doc/voc_anchors.png" width="450" alt="accessibility text">
+  <img src="./doc/voc_anchors.png" width="550" title="hover text">
+  <img src="./doc/voc_anchors.png" width="550" alt="accessibility text">
 </p>
 
 ## Dataloader
@@ -55,4 +55,4 @@ A more extensive analysis of the fully trained network to evaluate it's performa
 # Miscellaneous Topics
 
 ## Generic Environment Terms
-TensorRT, CUDA, cuDNN  
+TensorRT, CUDA, cuDNN, ONNX(Open Neural Network Exchange)  

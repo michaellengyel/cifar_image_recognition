@@ -21,6 +21,8 @@ from utils import load_checkpoint
 from utils import draw_y_on_x
 from utils import draw_yp_on_x
 
+import utils_refactor
+
 
 def main():
 
@@ -81,6 +83,46 @@ def main():
             prediction_boxes, true_boxes = get_evaluation_bboxes(test_loader, model, iou_threshold=config.NMS_IOU_THRESH, anchors=config.ANCHORS, threshold=config.CONF_THRESHOLD)
             mean_avg_prec = mean_average_precision(prediction_boxes, true_boxes, iou_threshold=config.MAP_IOU_THRESH, box_format='midpoint', num_classes=config.C)
 
+            # Perform evaluation calculation private
+
+            batch_precision = []
+            batch_recall = []
+            batch_mAP = []
+
+            model.eval()
+            for x, y in test_loader:
+                x = x.float()
+                x = x.to(config.DEVICE)
+                with torch.no_grad():
+                    yp = model(x)
+
+                yp = [yp[0].to('cpu'), yp[1].to('cpu'), yp[2].to('cpu')]
+
+                # boxes_from_yp(yp) returns all yp bboxes in a batch
+                yp_boxes = utils_refactor.boxes_from_yp(yp)
+                # boxes_from_y(y) returns all y bboxes in a batch
+                y_boxes = utils_refactor.boxes_from_y(y)
+
+                # Calculate precision for batch
+                batch_precision.append(utils_refactor.calc_batch_precision(yp_boxes, y_boxes, iou_threshold=0.5))
+                # Calculate recall for batch
+                batch_recall.append(utils_refactor.calc_batch_recall(yp_boxes, y_boxes, iou_threshold=0.5))
+                # Calculate mAP for batch
+                batch_mAP.append(utils_refactor.calc_mAP(yp_boxes, y_boxes, iou_threshold=0.5))
+
+                # mAP = utils_refactor.mean_average_precision(yp_boxes, y_boxes)
+                # mAP_batch = mean_average_precision(yp_boxes, y_boxes, iou_threshold=config.MAP_IOU_THRESH, box_format='midpoint', num_classes=config.C)
+
+            precision = sum(batch_precision) / len(batch_precision)
+            recall = sum(batch_recall) / len(batch_recall)
+            mAP = sum(batch_mAP) / len(batch_mAP)
+
+            writer.add_scalar("precision", precision, epoch)
+            writer.add_scalar("recall", recall, epoch)
+            writer.add_scalar("mAP", mAP, epoch)
+
+            # End performance evaluation
+
             # Log evaluation variables
             writer.add_scalar("Average Loss: ", mean_loss, epoch)
             writer.add_scalar("class_accuracy", class_accuracy, epoch)
@@ -101,8 +143,8 @@ def main():
             writer.add_image("yp on x", grid, global_step=epoch)
 
         # Save model
-        if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
-            save_checkpoint(model, optimizer, filename=config.CHECKPOINT_FILE)
+        #if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
+        #    save_checkpoint(model, optimizer, filename=config.CHECKPOINT_FILE)
 
         delta_time, current_time = time_function(current_time)
         writer.add_scalar("Epoch Duration [s]", delta_time, epoch)
