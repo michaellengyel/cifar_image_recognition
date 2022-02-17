@@ -4,8 +4,8 @@
 Topics: VOC vs. COCO, Calculate anchor boxes using K-means clustering.  
 
 <p align="center">
-  <img src="./doc/voc_anchors.png" width="550" title="hover text">
-  <img src="./doc/voc_anchors.png" width="550" alt="accessibility text">
+  <img src="./doc/voc_anchors.png" width="475" title="hover text">
+  <img src="./doc/voc_anchors.png" width="475" alt="accessibility text">
 </p>
 
 ## Dataloader
@@ -44,7 +44,7 @@ is the NMS algorthm.
 ## Evaluation
 The NMS is considered to be a NN postprocess. The evaluation is done once it has run.   
 Intersection Over Union (Jaccard Index), TP, TN, FP, FN, Precision, Recall, Precision Recall Curve, mean Average  
-precision (mAP or AP), Confusion Matrix.
+precision (mAP or AP), Confusion Matrix, F1 Score  
 
 Analyse: https://github.com/ultralytics/yolov3/issues/898  
 Analyse: https://github.com/ultralytics/yolov5/issues/918  

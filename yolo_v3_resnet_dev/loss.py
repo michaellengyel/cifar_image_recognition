@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from utils import iou_midpoints
+from utils import intersection_over_union
 
 
 class NoObjectLoss(nn.Module):
@@ -22,7 +22,7 @@ class ObjectLoss(nn.Module):
     def forward(self, obj, predictions, target, anchors):
         anchors = anchors.reshape(1, 3, 1, 1, 2)
         box_preds = torch.cat([self.sigmoid(predictions[..., 1:3]), torch.exp(predictions[..., 3:5]) * anchors], dim=-1)
-        ious = iou_midpoints(box_preds[obj], target[..., 1:5][obj]).detach()
+        ious = intersection_over_union(box_preds[obj], target[..., 1:5][obj], box_format="midpoint").detach()
         return self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
 
 

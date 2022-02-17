@@ -10,18 +10,16 @@ from torch.utils.data import Dataset, DataLoader
 from model_resnet import YoloV3
 from dataloader import YoloDataset
 from loss import YoloLoss
-from torchvision_utils import draw_bounding_boxes
 
-from utils import time_function
-from utils import check_class_accuracy
-from utils import get_evaluation_bboxes
-from utils import mean_average_precision
-from utils import save_checkpoint
-from utils import load_checkpoint
 from utils import draw_y_on_x
 from utils import draw_yp_on_x
 
-import utils_refactor
+from utils import time_function
+from utils import save_checkpoint
+from utils import load_checkpoint
+from utils import boxes_from_yp
+from utils import boxes_from_y
+from utils import calc_batch_precision_recall
 
 
 def main():
@@ -77,17 +75,10 @@ def main():
         # Run evaluation
         if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
 
-            # Perform evaluation calculations
-            model.eval()
-            class_accuracy, no_object_accuracy, obj_accuracy = check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
-            prediction_boxes, true_boxes = get_evaluation_bboxes(test_loader, model, iou_threshold=config.NMS_IOU_THRESH, anchors=config.ANCHORS, threshold=config.CONF_THRESHOLD)
-            mean_avg_prec = mean_average_precision(prediction_boxes, true_boxes, iou_threshold=config.MAP_IOU_THRESH, box_format='midpoint', num_classes=config.C)
+            # Perform evaluation calculation
 
-            # Perform evaluation calculation private
-
-            batch_precision = []
-            batch_recall = []
-            batch_mAP = []
+            batch_precisions = []
+            batch_recalls = []
 
             model.eval()
             for x, y in test_loader:
@@ -96,39 +87,28 @@ def main():
                 with torch.no_grad():
                     yp = model(x)
 
+                # Move predictions to cpu
                 yp = [yp[0].to('cpu'), yp[1].to('cpu'), yp[2].to('cpu')]
 
                 # boxes_from_yp(yp) returns all yp bboxes in a batch
-                yp_boxes = utils_refactor.boxes_from_yp(yp)
+                yp_boxes = boxes_from_yp(yp=yp, iou_threshold=config.MAP_IOU_THRESH, threshold=config.CONF_THRESHOLD)
+
                 # boxes_from_y(y) returns all y bboxes in a batch
-                y_boxes = utils_refactor.boxes_from_y(y)
+                y_boxes = boxes_from_y(y=y)
 
                 # Calculate precision for batch
-                batch_precision.append(utils_refactor.calc_batch_precision(yp_boxes, y_boxes, iou_threshold=0.5))
-                # Calculate recall for batch
-                batch_recall.append(utils_refactor.calc_batch_recall(yp_boxes, y_boxes, iou_threshold=0.5))
-                # Calculate mAP for batch
-                batch_mAP.append(utils_refactor.calc_mAP(yp_boxes, y_boxes, iou_threshold=0.5))
+                precision, recall = calc_batch_precision_recall(y_boxes=y_boxes, yp_boxes=yp_boxes, iou_threshold=config.MAP_IOU_THRESH)
 
-                # mAP = utils_refactor.mean_average_precision(yp_boxes, y_boxes)
-                # mAP_batch = mean_average_precision(yp_boxes, y_boxes, iou_threshold=config.MAP_IOU_THRESH, box_format='midpoint', num_classes=config.C)
+                batch_precisions.append(precision)
+                batch_recalls.append(recall)
 
-            precision = sum(batch_precision) / len(batch_precision)
-            recall = sum(batch_recall) / len(batch_recall)
-            mAP = sum(batch_mAP) / len(batch_mAP)
-
-            writer.add_scalar("precision", precision, epoch)
-            writer.add_scalar("recall", recall, epoch)
-            writer.add_scalar("mAP", mAP, epoch)
-
-            # End performance evaluation
+            mean_precision = sum(batch_precisions) / len(batch_precisions)
+            mean_recall = sum(batch_recalls) / len(batch_recalls)
 
             # Log evaluation variables
+            writer.add_scalar("precision", mean_precision, epoch)
+            writer.add_scalar("recall", mean_recall, epoch)
             writer.add_scalar("Average Loss: ", mean_loss, epoch)
-            writer.add_scalar("class_accuracy", class_accuracy, epoch)
-            writer.add_scalar("no_object_accuracy", no_object_accuracy, epoch)
-            writer.add_scalar("obj_accuracy", obj_accuracy, epoch)
-            writer.add_scalar("mean_avg_prec", mean_avg_prec, epoch)
 
             # Render prediction bboxes
             x, y = next(x for i, x in enumerate(test_loader) if i == 5)
@@ -139,12 +119,13 @@ def main():
                 yp = model(x_gpu)
                 yp = [yp[0].to('cpu'), yp[1].to('cpu'), yp[2].to('cpu')]
             x = draw_yp_on_x(x, yp, probability_threshold=0.5, anchors=config.ANCHORS)
+            x = draw_y_on_x(x, y)
             grid = torchvision.utils.make_grid(x, nrow=4)
             writer.add_image("yp on x", grid, global_step=epoch)
 
         # Save model
-        #if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
-        #    save_checkpoint(model, optimizer, filename=config.CHECKPOINT_FILE)
+        if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
+            save_checkpoint(model, optimizer, filename=config.CHECKPOINT_FILE)
 
         delta_time, current_time = time_function(current_time)
         writer.add_scalar("Epoch Duration [s]", delta_time, epoch)

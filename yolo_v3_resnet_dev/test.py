@@ -11,11 +11,11 @@ from model_resnet import YoloV3
 from dataloader import YoloDataset
 from loss import YoloLoss
 
-from utils import time_function
-from utils import check_class_accuracy
-from utils import get_evaluation_bboxes
-from utils import mean_average_precision
-from utils import get_evaluation_bboxes
+from utils_depreciated import time_function
+from utils_depreciated import check_class_accuracy
+from utils_depreciated import get_evaluation_bboxes
+from utils_depreciated import mean_average_precision
+from utils_depreciated import get_evaluation_bboxes
 
 
 def main():
@@ -54,8 +54,8 @@ def main():
     train_idx = 0
     anchors = config.ANCHORS
     threshold = 0.9
-    from utils import cells_to_bboxes
-    from utils import non_max_suppression
+    from utils_depreciated import cells_to_bboxes
+    from utils_depreciated import non_max_suppression
     for batch_idx, (x, labels) in enumerate(test_loader):
         x = x.float()
         x = x.to("cuda")

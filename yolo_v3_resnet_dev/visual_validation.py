@@ -12,11 +12,6 @@ from dataloader import YoloDataset
 from loss import YoloLoss
 from torchvision_utils import draw_bounding_boxes
 
-from utils import time_function
-from utils import check_class_accuracy
-from utils import get_evaluation_bboxes
-from utils import mean_average_precision
-from utils import save_checkpoint
 from utils import load_checkpoint
 from utils import draw_y_on_x
 from utils import draw_yp_on_x
