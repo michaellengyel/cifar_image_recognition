@@ -3,6 +3,7 @@ import torch
 import torch.optim as optim
 import torchvision
 import time
+import os
 
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import Dataset, DataLoader
@@ -11,6 +12,7 @@ from model_resnet import YoloV3
 from dataloader import YoloDataset
 from loss import YoloLoss
 from torchvision_utils import draw_bounding_boxes
+from torchvision.utils import save_image
 
 from utils import load_checkpoint
 from utils import draw_y_on_x
@@ -44,6 +46,16 @@ def main():
         x = draw_yp_on_x(x, yp, probability_threshold=0.5, anchors=config.ANCHORS)
         x = draw_y_on_x(x, y)
         grid = torchvision.utils.make_grid(x, nrow=4)
+
+        # Save batch grid as image
+        image_dir = "./batch_dir"
+        image_dir_exists = os.path.exists(image_dir)
+        if not image_dir_exists:
+            os.makedirs(image_dir)
+        img_name = str(image_dir) + "/batch_" + str(batch) + ".png"
+        save_image(grid.float() / 255, img_name)
+
+        # Log batch grid to SummaryWriter
         writer.add_image("yp and y on x", grid, global_step=batch)
 
 
