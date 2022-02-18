@@ -5,7 +5,7 @@ import torchvision
 import time
 
 from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 from model_resnet import YoloV3
 from dataloader import YoloDataset
@@ -13,7 +13,6 @@ from loss import YoloLoss
 
 from utils import draw_y_on_x
 from utils import draw_yp_on_x
-
 from utils import time_function
 from utils import save_checkpoint
 from utils import load_checkpoint
@@ -71,14 +70,12 @@ def main():
                 scalar.step(optimizer)
                 scalar.update()
         mean_loss = sum(losses) / len(losses)
+        writer.add_scalar("loss: ", mean_loss, epoch)
 
         # Run evaluation
         if config.SAVE_MODEL and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
 
-            # Perform evaluation calculation
-
-            batch_precisions = []
-            batch_recalls = []
+            batch_recalls, batch_precisions = [], []
 
             model.eval()
             for x, y in test_loader:
@@ -108,8 +105,8 @@ def main():
             # Log evaluation variables
             writer.add_scalar("precision", mean_precision, epoch)
             writer.add_scalar("recall", mean_recall, epoch)
-            writer.add_scalar("Average Loss: ", mean_loss, epoch)
 
+        if config.RENDER and epoch > 0 and epoch % config.SAVE_FREQUENCY == 0:
             # Render prediction bboxes
             x, y = next(x for i, x in enumerate(test_loader) if i == 5)
             model.eval()
@@ -135,4 +132,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -20,8 +20,9 @@ PIN_MEMORY = True
 LOAD_MODEL = False
 SAVE_MODEL = True
 SAVE_FREQUENCY = 10
+RENDER = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
-TRAINED_FILE = "checkpoint_475.pth.tar"
+TRAINED_FILE = "checkpoint_0_40.pth.tar"
 IMG_DIR = DATASET + "images/"
 LABEL_DIR = DATASET + "labels/"
 

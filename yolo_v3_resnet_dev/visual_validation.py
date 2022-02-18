@@ -22,7 +22,7 @@ from utils import draw_yp_on_x
 def main():
 
     # Data loading
-    test_csv_path = config.DATASET + "100examples.csv"
+    test_csv_path = config.DATASET + "test.csv"
     test_dataset = YoloDataset(test_csv_path, transforms=config.max_transforms, Scale=config.Scale, image_dir=config.IMG_DIR, label_dir=config.LABEL_DIR, anchor_boxes=config.ANCHORS, number_of_anchors=3, number_of_scales=3, ignore_iou_threshold=0.5, num_anchors_per_scale=3)
     test_loader = DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS, pin_memory=config.PIN_MEMORY, shuffle=False, drop_last=True)
 
@@ -34,7 +34,7 @@ def main():
     writer = SummaryWriter()
 
     # Loading previously saved model weights
-    load_checkpoint(config.CHECKPOINT_FILE, model, optimizer, config.LEARNING_RATE)
+    load_checkpoint(config.TRAINED_FILE, model, optimizer, config.LEARNING_RATE)
 
     for batch, (x, y) in enumerate(test_loader):
         model.eval()

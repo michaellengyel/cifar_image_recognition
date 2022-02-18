@@ -1,12 +1,11 @@
-import unittest
-
-import torch
-
 from loss import NoObjectLoss
 from loss import ObjectLoss
 from loss import BoxCoordinateLoss
 from loss import ClassLoss
 from loss import YoloLoss
+
+import torch
+import unittest
 
 
 class NoObjectLossTest(unittest.TestCase):

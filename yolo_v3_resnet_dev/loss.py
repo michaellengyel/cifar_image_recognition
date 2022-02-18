@@ -1,7 +1,7 @@
+from utils import intersection_over_union
+
 import torch
 import torch.nn as nn
-
-from utils import intersection_over_union
 
 
 class NoObjectLoss(nn.Module):

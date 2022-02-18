@@ -1,12 +1,11 @@
+import config
 import torch
 import time
 import math
 import numpy as np
 
-from scipy.optimize import linear_sum_assignment
 from torchvision_utils import draw_bounding_boxes
-
-import config
+from scipy.optimize import linear_sum_assignment
 
 
 def intersection_over_union(boxes_predictions, boxes_labels, box_format):
