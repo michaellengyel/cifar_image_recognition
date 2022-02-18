@@ -1,9 +1,7 @@
+from utils import intersection_over_union
+
 import unittest
-
 import torch
-
-from utils import iou_midpoints
-from utils import iou_corners
 
 
 class IouMidpointsTest(unittest.TestCase):
@@ -15,7 +13,7 @@ class IouMidpointsTest(unittest.TestCase):
         boxes_labels = torch.tensor([0.5, 0.5, 0.5, 0.5])
         ious_expected = torch.tensor([1.0],)
         # WHEN
-        ious_actual = iou_midpoints(boxes_predictions, boxes_labels)
+        ious_actual = intersection_over_union(boxes_predictions, boxes_labels, "midpoints")
         # THEN
         self.assertAlmostEqual(ious_expected.item(), ious_actual.item(), places=5)
 
@@ -26,7 +24,7 @@ class IouMidpointsTest(unittest.TestCase):
         boxes_labels = torch.tensor([0.5, 0.5, 0.5, 0.5])
         ious_expected = torch.tensor([(1/16)/(7/16)])
         # WHEN
-        ious_actual = iou_midpoints(boxes_predictions, boxes_labels)
+        ious_actual = intersection_over_union(boxes_predictions, boxes_labels, "midpoints")
         # THEN
         self.assertAlmostEqual(ious_expected.item(), ious_actual.item(), places=5)
 
@@ -37,7 +35,7 @@ class IouMidpointsTest(unittest.TestCase):
         boxes_labels = torch.tensor([0.25, 0.25, 0.5, 0.5])
         ious_expected = torch.tensor([(1/16)/(7/16)])
         # WHEN
-        ious_actual = iou_midpoints(boxes_predictions, boxes_labels)
+        ious_actual = intersection_over_union(boxes_predictions, boxes_labels, "midpoints")
         # THEN
         self.assertAlmostEqual(ious_expected.item(), ious_actual.item(), places=5)
 
@@ -48,7 +46,7 @@ class IouMidpointsTest(unittest.TestCase):
         boxes_labels = torch.tensor([0.5, 0.5, 0.5, 0.5])
         ious_expected = torch.tensor([0.25])
         # WHEN
-        ious_actual = iou_midpoints(boxes_predictions, boxes_labels)
+        ious_actual = intersection_over_union(boxes_predictions, boxes_labels, "midpoints")
         # THEN
         self.assertAlmostEqual(ious_expected.item(), ious_actual.item(), places=5)
 
@@ -59,7 +57,7 @@ class IouMidpointsTest(unittest.TestCase):
         boxes_labels = torch.tensor([[0.25, 0.25, 0.5, 0.5], [0.25, 0.25, 0.5, 0.5]])
         ious_expected = torch.tensor([[(1/16)/(7/16)], [(1/16)/(7/16)]])
         # WHEN
-        ious_actual = iou_midpoints(boxes_predictions, boxes_labels)
+        ious_actual = intersection_over_union(boxes_predictions, boxes_labels, "midpoints")
         # THEN
         self.assertAlmostEqual(ious_expected[0].item(), ious_actual[0].item(), places=5)
         self.assertAlmostEqual(ious_expected[0].item(), ious_actual[0].item(), places=5)
@@ -73,7 +71,7 @@ class IouCenterTest(unittest.TestCase):
         boxes_labels = torch.tensor([0.25, 0.25, 0.75, 0.75])
         ious_expected = torch.tensor([1.0],)
         # WHEN
-        ious_actual = iou_corners(boxes_predictions, boxes_labels)
+        ious_actual = intersection_over_union(boxes_predictions, boxes_labels, "corners")
         # THEN
         self.assertAlmostEqual(ious_expected.item(), ious_actual.item(), places=5)
 

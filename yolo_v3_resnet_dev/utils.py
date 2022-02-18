@@ -10,7 +10,7 @@ from scipy.optimize import linear_sum_assignment
 
 def intersection_over_union(boxes_predictions, boxes_labels, box_format):
 
-    if box_format == "midpoint":
+    if box_format == "midpoints":
         box1_x1 = boxes_predictions[..., 0:1] - boxes_predictions[..., 2:3] / 2
         box1_y1 = boxes_predictions[..., 1:2] - boxes_predictions[..., 3:4] / 2
         box1_x2 = boxes_predictions[..., 0:1] + boxes_predictions[..., 2:3] / 2
@@ -146,7 +146,7 @@ def boxes_from_yp(yp, iou_threshold, threshold):
             bboxes[idx] += box
 
     for idx in range(batch_size):
-        nms_boxes = non_max_suppression(bboxes[idx], iou_threshold=iou_threshold, threshold=threshold, box_format="midpoint")
+        nms_boxes = non_max_suppression(bboxes[idx], iou_threshold=iou_threshold, threshold=threshold, box_format="midpoints")
         for nms_box in nms_boxes:
             all_pred_boxes.append([train_idx] + nms_box)
         train_idx += 1
@@ -206,7 +206,7 @@ def calc_batch_precision_recall(y_boxes, yp_boxes, iou_threshold):
                 iou_matrix = np.zeros((len(ys), len(yps)))
                 for y_idx, y in enumerate(ys):
                     for yp_idx, yp in enumerate(yps):
-                        iou = intersection_over_union(torch.tensor(yp[3:]), torch.tensor(y[3:]), "midpoint")
+                        iou = intersection_over_union(torch.tensor(yp[3:]), torch.tensor(y[3:]), "midpoints")
                         iou_matrix[y_idx, yp_idx] = iou
 
                 row_ind, col_ind = linear_sum_assignment(iou_matrix, maximize=True)
