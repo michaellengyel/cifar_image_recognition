@@ -235,8 +235,8 @@ def calc_batch_precision_recall(y_boxes, yp_boxes, iou_threshold):
                 else:
                     p = state_matrix[i, c, 0] / (state_matrix[i, c, 0] + state_matrix[i, c, 1] + epsilon)
                     r = state_matrix[i, c, 0] / (state_matrix[i, c, 0] + state_matrix[i, c, 2] + epsilon)
-                    prec.append(p)
-                    rec.append(r)
+                    prec.append(p.item())
+                    rec.append(r.item())
 
     precision = sum(prec) / len(prec)
     recall = sum(rec) / len(rec)
