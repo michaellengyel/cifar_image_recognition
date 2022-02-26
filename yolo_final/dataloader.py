@@ -13,6 +13,27 @@ import cv2
 
 class CustomDataset(CocoDetection):
 
+    def __init__(self, root: str, annFile, transform=None, target_transform=None, transforms=None, catagory=None):
+        super(CocoDetection, self).__init__(root, transforms, transform, target_transform)
+        from pycocotools.coco import COCO
+        self.coco = COCO(annFile)
+        self.ids = []
+
+        if catagory is None:
+            self.ids = list(sorted(self.coco.imgs.keys()))
+        else:
+            for key, imgToAnn in self.coco.imgToAnns.items():
+                replAnn = []
+                contains_cat = False
+                for ann in imgToAnn:
+                    if ann['category_id'] == catagory:
+                        contains_cat = True
+                        replAnn.append(ann)
+                self.coco.imgToAnns[key] = replAnn
+                if contains_cat:
+                    self.ids.append(key)
+        print()
+
     def __getitem__(self, index):
 
         coco = self.coco

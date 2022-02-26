@@ -13,8 +13,8 @@ from utils import draw_y_on_x
 
 def main():
 
-    train_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.transforms)
-    val_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.transforms)
+    train_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.transforms, catagory=config.CATEGORY_FILTER)
+    val_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.transforms, catagory=config.CATEGORY_FILTER)
     train_loader = DataLoader(dataset=train_dataset, batch_size=16, num_workers=4, pin_memory=True, shuffle=False, drop_last=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=16, num_workers=4, pin_memory=True, shuffle=False, drop_last=True)
 

@@ -33,6 +33,6 @@ def draw_y_on_x(x, y):
 
         boxes = torch.tensor(boxes)
         labels = [config.COCO_CLASSES[x] for x in classes]
-        x[b, ...] = draw_bounding_boxes(image=x[b, ...].type(torch.uint8), boxes=boxes, colors=(255, 255, 255), labels=labels, width=2)
+        x[b, ...] = draw_bounding_boxes(image=x[b, ...].type(torch.uint8), boxes=boxes, colors=(255, 0, 255), labels=labels, width=2)
 
     return x
