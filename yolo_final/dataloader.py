@@ -18,18 +18,19 @@ class CustomDataset(CocoDetection):
         coco = self.coco
         img_id = self.ids[index]
         ann_ids = coco.getAnnIds(imgIds=img_id)
-        bboxes = coco.loadAnns(ann_ids)
-
+        labels = coco.loadAnns(ann_ids)
         path = coco.loadImgs(img_id)[0]['file_name']
 
-        # image = Image.open(os.path.join(self.root, path)).convert('RGB')
-        image = Image.open(os.path.join(self.root, path)).convert('RGB')
-        image = np.array(image)
+        image = np.array(Image.open(os.path.join(self.root, path)).convert('RGB'))
+        bboxes = [x['bbox'] for x in labels]
+        category_ids = [x['category_id'] for x in labels]
 
-        argumentations = self.transforms(image=image, bboxes=[[12, 23, 43, 34]])
-        image = argumentations['image']
-        bboxes = argumentations['bboxes']
+        transforms = self.transforms(image=image, bboxes=bboxes)
+        image = transforms['image']
+        bboxes = transforms['bboxes']
 
-        target = torch.tensor([0, 0, 0, 0])
+        target = torch.zeros((100, 5))
+        for i, (box, category_id) in enumerate(zip(bboxes, category_ids)):
+            target[i, :] = torch.tensor([box[0], box[1], box[2], box[3], category_id])
 
         return image, target
