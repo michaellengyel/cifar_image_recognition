@@ -12,6 +12,7 @@ annFile_val = coco + "annotations/instances_val2017.json"
 
 IMAGE_SIZE = 416
 CATEGORY_FILTER = None
+CYCLES = 100
 
 transforms = A.Compose(
     [

@@ -15,28 +15,39 @@ def main():
 
     train_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.transforms, catagory=config.CATEGORY_FILTER)
     val_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.transforms, catagory=config.CATEGORY_FILTER)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=16, num_workers=4, pin_memory=True, shuffle=False, drop_last=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=16, num_workers=4, pin_memory=True, shuffle=False, drop_last=True)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=16, num_workers=4, pin_memory=True, shuffle=True, drop_last=True)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=16, num_workers=4, pin_memory=True, shuffle=True, drop_last=True)
 
-    for index, (x, y) in enumerate(train_loader):
-        x = draw_y_on_x(x, y)
-        grid = torchvision.utils.make_grid(x, nrow=4)
-        # Save batch grid as image
-        image_dir = "./batch_dir"
-        image_dir_exists = os.path.exists(image_dir)
-        if not image_dir_exists:
-            os.makedirs(image_dir)
-        img_name = str(image_dir) + "/batch_" + str(index) + ".png"
-        save_image(grid.float() / 255, img_name)
+    for cycles in range(config.CYCLES):
 
-        print(index)
-        print(x.shape)
-        print(y.shape)
+        print(cycles)
 
-    for index, (x, y) in enumerate(val_loader):
-        print(index)
-        print(x.shape)
-        print(y.shape)
+        x, y = next(iter(train_loader))
+
+        # yp = model(x)
+        # loss = loss(y, yp)
+
+        # Run validation
+        if cycles % 10 == 0:
+            pass
+
+        # Save model
+        if cycles % 10 == 0:
+            pass
+
+        # Render
+        if cycles > 0:
+            x = draw_y_on_x(x, y)
+            grid = torchvision.utils.make_grid(x, nrow=4)
+            # Save batch grid as image
+            image_dir = "./batch_dir"
+            image_dir_exists = os.path.exists(image_dir)
+            if not image_dir_exists:
+                os.makedirs(image_dir)
+            img_name = str(image_dir) + "/batch_" + str(cycles) + ".png"
+            save_image(grid.float() / 255, img_name)
+
+
 
 
 if __name__ == "__main__":
