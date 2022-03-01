@@ -36,7 +36,7 @@ def main():
             pass
 
         # Render
-        if cycles > 0:
+        if cycles >= 0:
             x = draw_y_on_x(x, y)
             grid = torchvision.utils.make_grid(x, nrow=4)
             # Save batch grid as image
@@ -46,8 +46,6 @@ def main():
                 os.makedirs(image_dir)
             img_name = str(image_dir) + "/batch_" + str(cycles) + ".png"
             save_image(grid.float() / 255, img_name)
-
-
 
 
 if __name__ == "__main__":
