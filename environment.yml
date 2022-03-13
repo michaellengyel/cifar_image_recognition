@@ -27,5 +27,5 @@ dependencies:
     #- torchaudio==0.7.2
     - torch==1.7.1
     - imageio
-    - albumentations
+    - albumentations==1.0.3
 

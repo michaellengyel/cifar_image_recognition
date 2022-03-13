@@ -12,7 +12,7 @@ num_scales = 3
 num_anchors_per_scale = 3
 ignore_iou_threshold = 0.5
 anchor_boxes = [
-    [(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)],
+    [(0.28, 0.22), (0.38, 0.48), (0.90, 0.78)],
     [(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)],
     [(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)]
 ]
@@ -51,7 +51,7 @@ def bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scal
         has_anchor = [False, False, False]
 
         for anchor_idx in anchor_indices:
-            scale_idx = anchor_idx // num_anchors_per_scale  # 0, 1, 2
+            scale_idx = torch.div(anchor_idx, num_anchors_per_scale, rounding_mode='trunc')  # 0, 1, 2
             anchor_on_scale = anchor_idx % num_anchors_per_scale  # 0, 1, 2
             S = Scale[scale_idx]
             i, j = int(S * y), int(S * x)  # x = 0.5, S = 13 --> int(6.5) = 6
@@ -105,32 +105,25 @@ class CustomDataset(CocoDetection):
         path = coco.loadImgs(img_id)[0]['file_name']
 
         image = np.array(Image.open(os.path.join(self.root, path)).convert('RGB'))
-        category_ids = [x['category_id'] for x in labels]
         bboxes = [x['bbox'] + [x['category_id']] for x in labels]
 
-        transforms = self.transforms(image=image, bboxes=bboxes)
-        image = transforms['image']
-        bboxes = transforms['bboxes']
-
-        height, width = image.shape[1], image.shape[2]
+        height, width = float(image.shape[0]), float(image.shape[1])
         normed_bboxes = []
         for bbox in bboxes:
-            bbox = list(bbox)
-            bbox[0] = (bbox[0] + bbox[2] / 2) / width
-            bbox[1] = (bbox[1] + bbox[3] / 2) / height
-            bbox[2] = bbox[2] / width
-            bbox[3] = bbox[3] / height
+            x, y, w, h, _ = list(bbox)
+            bbox[0] = (x + (w / 2.0)) / width
+            bbox[1] = (y + (h / 2.0)) / height
+            bbox[2] = max(min(w / width, 0.9999), 0.0001)
+            bbox[3] = max(min(h / height, 0.9999), 0.0001)
             normed_bboxes.append(bbox)
         bboxes = normed_bboxes
 
+        transforms = self.transforms(image=image, bboxes=bboxes)
+        x = transforms['image']
+        bboxes = transforms['bboxes']
+
         # Create target datastructure
-        targets = [torch.zeros((num_scales, s, s, 6)) for s in scale]
-        targets = bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scale, self.anchor_boxes, scale)
+        y = [torch.zeros((num_scales, s, s, 6)) for s in scale]
+        y = bboxes_to_target(bboxes, y, ignore_iou_threshold, num_anchors_per_scale, self.anchor_boxes, scale)
 
-        """
-        target = torch.zeros((100, 5))
-        for i, (box, category_id) in enumerate(zip(bboxes, category_ids)):
-            target[i, :] = torch.tensor([box[0], box[1], box[2], box[3], category_id])
-        """
-
-        return image, targets
+        return x, y

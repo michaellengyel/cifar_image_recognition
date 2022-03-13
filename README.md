@@ -10,6 +10,8 @@ $ conda activate ml_env
 To utilize GPU (Optional):
 
 $ pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+or...  
+$ conda install pytorch torchvision -c pytorch
 
 If using pycharm, set the interpreter to the python version in the created conda env e.g:
 
