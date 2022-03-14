@@ -90,15 +90,15 @@ class ScalePrediction(nn.Module):
 class FeatureExtractor(nn.Module):
     def __init__(self):
         super(FeatureExtractor, self).__init__()
-        # resnet = models.resnet101(pretrained=True)
+        resnet = models.resnet50(pretrained=True)
         # resnet = models.resnet152(pretrained=True)
         # resnet = models.mobilenet_v3_large(pretrained=True)
-        resnet = models.resnet34(pretrained=True)
+        # resnet = models.resnet34(pretrained=True)
         for param in resnet.parameters():
             param.requires_grad = True
         _resnet = list(resnet.children())[:-2]
         self.resnet = nn.Sequential(*_resnet)  # Resnet without the fc layer
-        self.conv = CNNBlock(512, 2*512, kernel_size=3, padding=1)
+        self.conv = CNNBlock(2048, 2*2048, kernel_size=3, padding=1)
 
     def forward(self, x):
 
@@ -116,7 +116,7 @@ class FeatureExtractor(nn.Module):
 
 
 class YoloV3(nn.Module):
-    def __init__(self, in_channels=2*512, num_classes=90):
+    def __init__(self, in_channels=2*2048, num_classes=90):
         super(YoloV3, self).__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
@@ -170,7 +170,7 @@ class YoloV3(nn.Module):
 
                 elif module == "U":
                     layers.append(nn.Upsample(scale_factor=2))
-                    in_channels = in_channels * 2  # We want to concatenate just after the up-sample
+                    in_channels = in_channels * 5  # We want to concatenate just after the up-sample
 
         return layers
 

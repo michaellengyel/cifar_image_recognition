@@ -1,4 +1,5 @@
 
+import config
 from torchvision.datasets import CocoDetection
 import numpy as np
 from PIL import Image, ImageFile
@@ -63,7 +64,8 @@ def bboxes_to_target(bboxes, targets, ignore_iou_threshold, num_anchors_per_scal
                 width_cell, height_cell = (width * S, height * S)
                 box_coordinates = torch.tensor([x_cell, y_cell, width_cell, height_cell])
                 targets[scale_idx][anchor_on_scale, i, j, 1:5] = box_coordinates
-                targets[scale_idx][anchor_on_scale, i, j, 5] = int(class_label)
+                # COCO_MAPPING maps to sequential values
+                targets[scale_idx][anchor_on_scale, i, j, 5] = config.COCO_MAPPING[int(class_label)]
                 has_anchor[scale_idx] = True
 
             elif not anchor_taken and iou_anchors[anchor_idx] > ignore_iou_threshold:

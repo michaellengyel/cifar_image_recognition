@@ -17,6 +17,7 @@ from utils import boxes_from_y
 from utils import boxes_from_yp
 from utils import save_checkpoint
 from utils import load_checkpoint
+from utils import denormalize
 
 from loss import YoloLoss
 
@@ -39,15 +40,16 @@ def main():
 
     # Data loading
     train_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.train_transforms, catagory=config.CATEGORY_FILTER)
-    val_dataset = CustomDataset(root=config.root_train, annFile=config.annFile_train, transforms=config.val_transforms, catagory=config.CATEGORY_FILTER)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=16, num_workers=2, pin_memory=True, shuffle=True, drop_last=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=16, num_workers=2, pin_memory=True, shuffle=False, drop_last=True)
+    val_dataset = CustomDataset(root=config.root_val, annFile=config.annFile_val, transforms=config.val_transforms, catagory=config.CATEGORY_FILTER)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=8, num_workers=2, pin_memory=True, shuffle=True, drop_last=True)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=8, num_workers=2, pin_memory=True, shuffle=False, drop_last=True)
 
     # Model
     model = YoloV3(num_classes=config.C).to(device=config.DEVICE)
     # from model_external import YOLOv3
     # model = YOLOv3(num_classes=90).to(device=config.DEVICE)
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY)
+    from loss_external import YoloLoss
     loss_function = YoloLoss().to(device=config.DEVICE)
 
     # Miscellaneous
@@ -57,7 +59,7 @@ def main():
 
     # Loading previously saved model weights
     if config.LOAD_MODEL:
-        load_checkpoint("checkpoint_18_68k.pth.tar", model, optimizer, config.LEARNING_RATE)
+        load_checkpoint("cp.pth.tar", model, optimizer, config.LEARNING_RATE)
 
     print(torch.cuda.memory_summary(device=None, abbreviated=False))
 
@@ -66,8 +68,7 @@ def main():
 
         print("Cycle:", cycle)
 
-        model.train()
-        x, y = next(iter(train_loader))
+        x, y = next(iter(val_loader))
         x = x.to(config.DEVICE)
         y0, y1, y2 = (y[0].to(config.DEVICE), y[1].to(config.DEVICE), y[2].to(config.DEVICE))
         yp = model(x)
@@ -81,9 +82,9 @@ def main():
 
         # Run validation
         if cycle % 100 == 0 and cycle != 0:
+            model.eval()
             losses = []
             with torch.no_grad():
-                model.eval()
                 x, y = next(iter(val_loader))
                 x = x.to(config.DEVICE)
                 y0, y1, y2 = (y[0].to(config.DEVICE), y[1].to(config.DEVICE), y[2].to(config.DEVICE))
@@ -95,6 +96,7 @@ def main():
                 losses.append(loss)
             avg_val_loss = sum(losses) / len(losses)
             writer.add_scalar("val_loss: ", avg_val_loss, cycle)
+            model.train()
 
         # Run validation
         """
@@ -116,26 +118,27 @@ def main():
 
         # Save model
         if cycle % 1000 == 0 and cycle != 0:
-            save_checkpoint(model, optimizer, filename=config.CHECKPOINT_FILE)
+            save_checkpoint(model, optimizer, cycle, filename=config.CHECKPOINT_FILE)
 
-        # Render
+        # Rendering loop
         if cycle % 100 == 0 and cycle != 0:
+            model.eval()
             x, y = next(iter(val_loader))
             with torch.no_grad():
-                model.eval()
                 x_gpu = x.to(config.DEVICE)
                 yp = model(x_gpu)
                 yp = [yp[0].to('cpu'), yp[1].to('cpu'), yp[2].to('cpu')]
-            x = draw_yp_on_x(x, yp, probability_threshold=0.5, anchors=config.anchors)
-            x = draw_y_on_x(x, y)
-            grid = torchvision.utils.make_grid(x, nrow=4)
+            x = denormalize(x) * 255
+            draw_y_on_x(x, y)
+            draw_yp_on_x(x, yp, probability_threshold=0.5, anchors=config.anchors)
             # Save batch grid as image
             image_dir = "./batch_dir"
             image_dir_exists = os.path.exists(image_dir)
             if not image_dir_exists:
                 os.makedirs(image_dir)
             img_name = str(image_dir) + "/batch_" + str(cycle) + ".png"
-            save_image(grid, img_name)
+            save_image(x / 255, img_name)
+            model.train()
 
         writer.add_scalar("train_loss: ", loss.item(), cycle)
         delta_time, current_time = time_function(current_time)

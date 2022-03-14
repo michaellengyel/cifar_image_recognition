@@ -86,7 +86,6 @@ def draw_y_on_x(x, y):
         classes = []
 
         for scale in range(len(y)):
-            # print(y[scale][batch, ...].shape)
             for a in range(y[scale][batch, ...].shape[0]):
                 for w in range(y[scale][batch, ...].shape[1]):
                     for h in range(y[scale][batch, ...].shape[2]):
@@ -104,10 +103,8 @@ def draw_y_on_x(x, y):
                             classes.append(int(cell[5]))
 
         boxes = torch.tensor(boxes)
-        labels = [config.COCO_CLASSES[x] for x in classes]
+        labels = [config.COCO_CLASSES[config.COCO_MAPPING_INV[x]] for x in classes]
         x[batch, ...] = draw_bounding_boxes(image=x[batch, ...].type(torch.uint8), boxes=boxes, colors=(0, 255, 255), labels=labels, width=2)
-
-    return x
 
 
 def draw_yp_on_x(x, yp, probability_threshold, anchors):
@@ -129,7 +126,8 @@ def draw_yp_on_x(x, yp, probability_threshold, anchors):
                     for h in range(yp_h):
 
                         # Current cell probability is above threshold
-                        if yp[scale][b, a, w, h, 0] > probability_threshold:
+                        # Use sigmoid to turn BCEWithLogitsLoss into a probability
+                        if torch.sigmoid(yp[scale][b, a, w, h, 0]) > probability_threshold:
 
                             # p, x, y, w, h, logit
                             cell = yp[scale][b, a, w, h, ...]
@@ -142,8 +140,8 @@ def draw_yp_on_x(x, yp, probability_threshold, anchors):
 
                             # Decode yp
                             bbox_yolo = torch.tensor([cell_box[0],
-                                                      torch.sigmoid(cell_box[1]) + (h + 0.5) * box_size,
-                                                      torch.sigmoid(cell_box[2]) + (w + 0.5) * box_size,
+                                                      (torch.sigmoid(cell_box[1]) + h) * box_size,
+                                                      (torch.sigmoid(cell_box[2]) + w) * box_size,
                                                       anchors[scale][a][0] * math.pow(math.e, cell_box[3]) * width,
                                                       anchors[scale][a][1] * math.pow(math.e, cell_box[4]) * height,
                                                       cell_box[5]])
@@ -162,10 +160,8 @@ def draw_yp_on_x(x, yp, probability_threshold, anchors):
 
         boxes = [box[1:5].tolist() for box in nms_bboxes]
         boxes = torch.tensor(boxes)
-        labels = [config.COCO_CLASSES[int(x[5].item())] for x in nms_bboxes]
-        x[b, ...] = draw_bounding_boxes(image=x[b, ...].type(torch.uint8), boxes=boxes, colors=(255, 0, 255), labels=labels, width=2)
-
-    return x
+        labels = [config.COCO_CLASSES[config.COCO_MAPPING_INV[int(x[5].item())]] + " " + str(int(torch.sigmoid(x[0]).item() * 100)) + "%" for x in nms_bboxes]
+        x[b, ...] = draw_bounding_boxes(image=x[b, ...].type(torch.uint8), boxes=boxes, colors=(255, 0, 255), labels=labels, width=1)
 
 
 def yp_cells_to_boxes(yp_scale, anchors, S):
@@ -278,11 +274,12 @@ def boxes_from_y(y):
     return all_true_boxes
 
 
-def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
+def save_checkpoint(model, optimizer, cycle, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     checkpoint = {
         "state_dict": model.state_dict(),
         "optimizer": optimizer.state_dict(),
+        "cycle": cycle,
     }
     torch.save(checkpoint, filename)
 
@@ -297,3 +294,12 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
     # and it will lead to many hours of debugging \:
     #for param_group in optimizer.param_groups:
     #    param_group["lr"] = lr
+
+
+def denormalize(x, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
+    # 3, H, W, B
+    ten = x.clone().permute(1, 2, 3, 0)
+    for t, m, s in zip(ten, mean, std):
+        t.mul_(s).add_(m)
+    # B, 3, H, W
+    return torch.clamp(ten, 0, 1).permute(3, 0, 1, 2)
